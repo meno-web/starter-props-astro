@@ -1,0 +1,63 @@
+{
+  "component": {
+    "structure": {
+      "type": "node",
+      "tag": "p",
+      "style": {
+        "base": {
+          "fontSize": {
+            "_mapping": true,
+            "prop": "size",
+            "values": {
+              "default": "var(--te-fs)",
+              "small": "var(--tex-fs)",
+              "medium": "var(--t-fs)",
+              "large": "var(--text-fs)"
+            }
+          },
+          "letterSpacing": "var(--t-ls)",
+          "fontWeight": "var(--t-fw)",
+          "lineHeight": "var(--t-lh)",
+          "color": {
+            "_mapping": true,
+            "prop": "color",
+            "values": {
+              "default": "var(--text)",
+              "light": "var(--muted)"
+            }
+          }
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "children": [
+        "{{text}}"
+      ]
+    },
+    "interface": {
+      "text": {
+        "type": "rich-text",
+        "default": "Design and publish professional websites without writing code. Start with this template and make it yours in minutes."
+      },
+      "size": {
+        "type": "select",
+        "default": "default",
+        "options": [
+          "small",
+          "default",
+          "medium",
+          "large"
+        ]
+      },
+      "color": {
+        "type": "select",
+        "default": "default",
+        "options": [
+          "default",
+          "light"
+        ]
+      }
+    },
+    "acceptsStyles": true
+  }
+}

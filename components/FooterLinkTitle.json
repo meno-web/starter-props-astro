@@ -1,0 +1,30 @@
+{
+  "component": {
+    "interface": {
+      "text": {
+        "type": "string",
+        "default": "Product"
+      }
+    },
+    "structure": {
+      "type": "node",
+      "tag": "span",
+      "style": {
+        "base": {
+          "display": "block",
+          "fontSize": "var(--s-fs)",
+          "letterSpacing": "var(--s-ls)",
+          "fontWeight": "var(--s-fw)",
+          "textTransform": "var(--subtitle)",
+          "color": "var(--text)",
+          "marginBottom": "16px"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "children": [
+        "{{text}}"
+      ]
+    }
+  }
+}

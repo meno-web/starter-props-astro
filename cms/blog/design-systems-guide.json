@@ -1,0 +1,159 @@
+{
+  "_id": "blg003",
+  "_filename": "design-systems-guide",
+  "_createdAt": "2025-01-10T10:00:00Z",
+  "title": "Design Systems: A Complete Guide",
+  "slug": "design-systems-guide",
+  "category": "Design",
+  "date": "Jan 10, 2025",
+  "description": "How to build and maintain a design system that scales with your organization.",
+  "image": "/images/placeholder-img.webp",
+  "content": {
+    "type": "doc",
+    "content": [
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": null },
+        "content": [
+          { "type": "text", "text": "A design system is the shared language that lets product, design, and engineering move in lockstep. Done well, it is invisible — people stop arguing about spacing and start shipping features. Done poorly, it becomes another frozen artifact that everyone references politely and nobody trusts." }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": null },
+        "content": [
+          { "type": "text", "text": "This guide walks through the parts that matter most in practice: the foundations you standardize first, the components worth building, and the operating model that keeps the system alive as the product grows." }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": null },
+        "content": [ { "type": "text", "text": "Start with tokens, not components" } ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": null },
+        "content": [
+          { "type": "text", "text": "The most leveraged work you can do early on is codifying design decisions as tokens: colors, spacing, radii, typography, shadows. These values show up everywhere, so pinning them down creates consistency long before you have a polished component library." }
+        ]
+      },
+      {
+        "type": "bulletList",
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": { "textAlign": null },
+                "content": [
+                  { "type": "text", "marks": [ { "type": "bold" } ], "text": "Color" },
+                  { "type": "text", "text": " — define a palette first, then semantic aliases (background, text, accent). Components should reference aliases, never raw palette values." }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": { "textAlign": null },
+                "content": [
+                  { "type": "text", "marks": [ { "type": "bold" } ], "text": "Spacing" },
+                  { "type": "text", "text": " — a small scale (4, 8, 12, 16, 24, 32, 48) covers 95% of needs. The remaining 5% is almost always an alignment bug in disguise." }
+                ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": { "textAlign": null },
+                "content": [
+                  { "type": "text", "marks": [ { "type": "bold" } ], "text": "Typography" },
+                  { "type": "text", "text": " — fewer styles than you think. Five sizes and two weights beat fifteen one-off choices." }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 2, "textAlign": null },
+        "content": [ { "type": "text", "text": "Build components people actually want" } ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": null },
+        "content": [
+          { "type": "text", "text": "The fastest path to adoption is solving painful, repeatable problems for product teams. Do not start by building the 40 components you think a design system should have — start by auditing what engineers are rebuilding every sprint and ship those first. Credibility follows utility." }
+        ]
+      },
+      {
+        "type": "blockquote",
+        "content": [
+          {
+            "type": "paragraph",
+            "attrs": { "textAlign": null },
+            "content": [
+              { "type": "text", "text": "A design system succeeds the day product teams use it without being asked." }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "heading",
+        "attrs": { "level": 3, "textAlign": null },
+        "content": [ { "type": "text", "text": "Keep it alive" } ]
+      },
+      {
+        "type": "orderedList",
+        "attrs": { "start": 1 },
+        "content": [
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": { "textAlign": null },
+                "content": [ { "type": "text", "text": "Own the system with a small, funded team — volunteers will always deprioritize it for product work." } ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": { "textAlign": null },
+                "content": [ { "type": "text", "text": "Publish changes with proper versioning and migration notes. Silent breaking changes destroy trust overnight." } ]
+              }
+            ]
+          },
+          {
+            "type": "listItem",
+            "content": [
+              {
+                "type": "paragraph",
+                "attrs": { "textAlign": null },
+                "content": [ { "type": "text", "text": "Measure usage. If a component has zero consumers after a quarter, deprecate it without shame." } ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "paragraph",
+        "attrs": { "textAlign": null },
+        "content": [
+          { "type": "text", "text": "The best design systems look obvious in hindsight. That is the goal — not a monument to process, but a quiet piece of infrastructure that lets the rest of the company focus on customers instead of pixels." }
+        ]
+      }
+    ]
+  },
+  "_url": "/blog/design-systems-guide"
+}

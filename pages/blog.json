@@ -1,0 +1,100 @@
+{
+  "root": {
+    "type": "component",
+    "component": "Layout",
+    "children": [
+      {
+        "type": "component",
+        "component": "Section",
+        "children": [
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "flex-start",
+                "alignItems": "center",
+                "textAlign": "center",
+                "marginBottom": "52px"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "component",
+                "component": "Subtitle",
+                "props": {
+                  "text": "Blog"
+                }
+              },
+              {
+                "type": "component",
+                "component": "Heading",
+                "props": {
+                  "text": "All articles"
+                },
+                "style": {
+                  "base": {
+                    "marginBottom": "var(--h-m)",
+                    "textAlign": "center"
+                  }
+                }
+              },
+              {
+                "type": "component",
+                "component": "Text",
+                "props": {
+                  "text": "Browse every post, tutorial, and insight we've published."
+                },
+                "style": {
+                  "base": {
+                    "textAlign": "center",
+                    "maxWidth": "520px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "display": "grid",
+                "gridTemplateColumns": "1fr 1fr 1fr",
+                "gap": "16px"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "list",
+                "sourceType": "collection",
+                "source": "blog",
+                "itemAs": "post",
+                "sort": {
+                  "field": "_createdAt",
+                  "order": "desc"
+                },
+                "children": [
+                  {
+                    "type": "component",
+                    "component": "BlogListCard"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "title": "Blog",
+    "description": "Browse all articles, tutorials, and insights."
+  }
+}

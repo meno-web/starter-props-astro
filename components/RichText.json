@@ -1,0 +1,31 @@
+{
+  "component": {
+    "structure": {
+      "type": "node",
+      "tag": "div",
+      "style": {
+        "base": {
+          "lineHeight": "1.7",
+          "fontSize": "18px",
+          "color": "var(--text)",
+          "letterSpacing": "-0.01em"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "attributes": {
+        "cmsrt": true
+      },
+      "children": "{{content}}"
+    },
+    "interface": {
+      "content": {
+        "type": "rich-text",
+        "default": "Rich text",
+        "editor": "extended"
+      }
+    },
+    "css": "[cmsrt] h1,\n[cmsrt] h2,\n[cmsrt] h3,\n[cmsrt] h4,\n[cmsrt] h5,\n[cmsrt] h6 {\n  font-weight: 450;\n  margin-top: 32px;\n  margin-bottom: 4px;\n}\n\n[cmsrt] h2 {\n  font-size: 36px;\n}\n\n[cmsrt] h3 {\n  font-size: 26px;\n}\n\n[cmsrt] p {\n  margin-bottom: 16px;\n}\n\n[cmsrt] a {\n  color: var(--text);\n  text-decoration: underline;\n}\n\n[cmsrt] ul,\n[cmsrt] ol {\n  margin: 0 0 16px;\n  padding-left: 24px;\n}\n\n[cmsrt] li {\n  margin-bottom: 6px;\n}\n\n[cmsrt] blockquote {\n  border-left: 2px solid var(--border);\n  padding-left: 16px;\n  margin: 24px 0;\n  color: var(--muted);\n  font-style: italic;\n}\n\n[cmsrt] img {\n  max-width: 100%;\n  height: auto;\n  border-radius: 8px;\n  margin: 24px 0;\n}",
+    "acceptsStyles": true
+  }
+}

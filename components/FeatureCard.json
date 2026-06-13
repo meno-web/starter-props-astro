@@ -1,0 +1,51 @@
+{
+  "component": {
+    "structure": {
+      "type": "node",
+      "tag": "div",
+      "style": {
+        "base": {
+          "padding": "24px",
+          "backgroundColor": "var(--bg)",
+          "borderRadius": "8px"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "children": [
+        {
+          "type": "component",
+          "component": "Heading",
+          "props": {
+            "text": "{{text}}",
+            "tag": "3"
+          },
+          "style": {
+            "base": {
+              "marginBottom": "var(--he-m)"
+            },
+            "tablet": {},
+            "mobile": {}
+          }
+        },
+        {
+          "type": "component",
+          "component": "Text",
+          "props": {
+            "text": "{{description}}"
+          }
+        }
+      ]
+    },
+    "interface": {
+      "text": {
+        "type": "string",
+        "default": "This is heading"
+      },
+      "description": {
+        "type": "string",
+        "default": "This is heading"
+      }
+    }
+  }
+}

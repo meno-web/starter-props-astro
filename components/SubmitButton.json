@@ -1,0 +1,39 @@
+{
+  "component": {
+    "interface": {
+      "text": {
+        "type": "string",
+        "default": "Send Message"
+      }
+    },
+    "structure": {
+      "type": "node",
+      "tag": "button",
+      "style": {
+        "base": {
+          "padding": "var(--b-p)",
+          "display": "inline-flex",
+          "flexDirection": "row",
+          "justifyContent": "center",
+          "alignItems": "center",
+          "backgroundColor": "var(--accent)",
+          "borderRadius": "var(--b-br)",
+          "color": "var(--white)",
+          "fontSize": "var(--te-fs)",
+          "fontWeight": "500",
+          "border": "none",
+          "cursor": "pointer",
+          "marginTop": "var(--b-m)"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "attributes": {
+        "type": "submit"
+      },
+      "children": [
+        "{{text}}"
+      ]
+    }
+  }
+}

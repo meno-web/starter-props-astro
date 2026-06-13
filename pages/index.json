@@ -1,0 +1,365 @@
+{
+  "root": {
+    "type": "component",
+    "component": "Layout",
+    "children": [
+      {
+        "type": "component",
+        "component": "Section",
+        "children": [
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "flex-start",
+                "alignItems": "center",
+                "margin": "auto"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "component",
+                "component": "Heading",
+                "props": {
+                  "text": "<!--MENO_RAW_HTML-->Everything you <span class=\"custom-span\" data-meno-span=\"true\">need</span> to build professional website",
+                  "tag": "1"
+                },
+                "style": {
+                  "base": {
+                    "marginBottom": "var(--h-m)",
+                    "textAlign": "center",
+                    "maxWidth": "725px"
+                  },
+                  "tablet": {},
+                  "mobile": {}
+                }
+              },
+              {
+                "type": "component",
+                "component": "Text",
+                "props": {
+                  "text": "Design and publish professional websites without writing code. Start with this template and make it yours in minutes.",
+                  "size": "default"
+                },
+                "style": {
+                  "base": {
+                    "textAlign": "center",
+                    "maxWidth": "500px"
+                  }
+                }
+              },
+              {
+                "type": "node",
+                "tag": "div",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "justifyContent": "flex-start",
+                    "alignItems": "stretch",
+                    "gap": "12px",
+                    "marginTop": "var(--b-m)"
+                  },
+                  "tablet": {},
+                  "mobile": {}
+                },
+                "children": [
+                  {
+                    "type": "component",
+                    "component": "Button",
+                    "props": {
+                      "version": "default"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "component": "Button",
+                    "props": {
+                      "text": "Button",
+                      "link": "#",
+                      "version": "secondary"
+                    },
+                    "style": {
+                      "base": {},
+                      "tablet": {},
+                      "mobile": {}
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "component",
+        "component": "Section",
+        "style": {
+          "base": {
+            "backgroundColor": "var(--gray-100)"
+          }
+        },
+        "children": [
+          {
+            "type": "component",
+            "component": "Heading",
+            "props": {
+              "text": "<!--MENO_RAW_HTML-->This is <span class=\"custom-span\" data-meno-span=\"true\">features</span> headline",
+              "tag": "2"
+            },
+            "style": {
+              "base": {
+                "marginBottom": "var(--h-m)"
+              },
+              "tablet": {},
+              "mobile": {}
+            }
+          },
+          {
+            "type": "component",
+            "component": "Text",
+            "props": {
+              "text": "Short supporting description that previews how this section looks and reads in the editor"
+            },
+            "style": {
+              "base": {
+                "maxWidth": "380px"
+              }
+            }
+          },
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "display": "grid",
+                "gridTemplateColumns": "1fr 1fr 1fr",
+                "gap": "16px",
+                "marginTop": "40px"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "component",
+                "component": "FeatureCard",
+                "props": {
+                  "description": "This is description",
+                  "text": "Feature 1"
+                }
+              },
+              {
+                "type": "component",
+                "component": "FeatureCard",
+                "props": {
+                  "description": "This is description",
+                  "text": "Feature 2"
+                }
+              },
+              {
+                "type": "component",
+                "component": "FeatureCard",
+                "props": {
+                  "description": "This is description",
+                  "text": "Feature 3"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "component",
+        "component": "Section",
+        "children": [
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "maxWidth": "var(--co-s)",
+                "margin": "auto"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "component",
+                "component": "Heading",
+                "props": {
+                  "text": "Frequently asked questions",
+                  "tag": "2"
+                },
+                "style": {
+                  "base": {
+                    "marginBottom": "var(--h-m)"
+                  },
+                  "tablet": {},
+                  "mobile": {}
+                }
+              },
+              {
+                "type": "component",
+                "component": "Text",
+                "props": {
+                  "text": "Short supporting description that previews how this section looks and reads in the editor."
+                }
+              },
+              {
+                "type": "node",
+                "tag": "div",
+                "style": {
+                  "base": {
+                    "marginTop": "60px",
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "justifyContent": "space-between",
+                    "alignItems": "stretch"
+                  },
+                  "tablet": {},
+                  "mobile": {}
+                },
+                "children": [
+                  {
+                    "type": "component",
+                    "component": "FaqQuestion",
+                    "props": {
+                      "answer": "Short supporting description that previews how this section looks and reads in the editor",
+                      "question": "First question",
+                      "isOpen": false
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "component": "FaqQuestion",
+                    "props": {
+                      "question": "Second question",
+                      "answer": "Short supporting description that previews how this section looks and reads in the editor"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "component": "FaqQuestion",
+                    "props": {
+                      "question": "Third question",
+                      "answer": "Short supporting description that previews how this section looks and reads in the editor"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "component": "FaqQuestion",
+                    "props": {
+                      "question": "Fourth question",
+                      "answer": "Short supporting description that previews how this section looks and reads in the editor",
+                      "isOpen": false
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "component",
+        "component": "Section",
+        "children": [
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "display": "flex",
+                "flexDirection": "column",
+                "justifyContent": "flex-start",
+                "alignItems": "center",
+                "textAlign": "center",
+                "marginBottom": "52px"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "component",
+                "component": "Subtitle",
+                "props": {
+                  "text": "Blog"
+                }
+              },
+              {
+                "type": "component",
+                "component": "Heading",
+                "props": {
+                  "text": "Latest articles"
+                },
+                "style": {
+                  "base": {
+                    "marginBottom": "var(--h-m)",
+                    "textAlign": "center"
+                  }
+                }
+              },
+              {
+                "type": "component",
+                "component": "Text",
+                "props": {
+                  "text": "Stay up to date with the latest news, tips, and insights."
+                },
+                "style": {
+                  "base": {
+                    "textAlign": "center",
+                    "maxWidth": "520px"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "type": "node",
+            "tag": "div",
+            "style": {
+              "base": {
+                "display": "grid",
+                "gridTemplateColumns": "1fr 1fr 1fr",
+                "gap": "16px"
+              },
+              "tablet": {},
+              "mobile": {}
+            },
+            "children": [
+              {
+                "type": "list",
+                "sourceType": "collection",
+                "source": "blog",
+                "itemAs": "post",
+                "sort": {
+                  "field": "_createdAt",
+                  "order": "desc"
+                },
+                "limit": 3,
+                "children": [
+                  {
+                    "type": "component",
+                    "component": "BlogListCard"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "meta": {
+    "title": "starter-variables-01",
+    "description": "Created with Meno Studio"
+  }
+}

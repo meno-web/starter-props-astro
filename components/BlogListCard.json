@@ -1,0 +1,109 @@
+{
+  "component": {
+    "structure": {
+      "type": "link",
+      "href": "{{post._url}}",
+      "style": {
+        "base": {
+          "display": "flex",
+          "flexDirection": "column",
+          "justifyContent": "flex-start",
+          "alignItems": "stretch",
+          "backgroundColor": "var(--bg)",
+          "borderRadius": "8px",
+          "overflow": "hidden",
+          "border": "1px solid var(--border)",
+          "color": "var(--text)",
+          "textDecoration": "none"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "children": [
+        {
+          "type": "node",
+          "tag": "img",
+          "style": {
+            "base": {
+              "aspectRatio": "16 / 10",
+              "objectFit": "cover"
+            },
+            "tablet": {},
+            "mobile": {}
+          },
+          "attributes": {
+            "src": "{{post.image}}",
+            "alt": "{{post.title}}"
+          }
+        },
+        {
+          "type": "node",
+          "tag": "div",
+          "style": {
+            "base": {
+              "padding": "24px",
+              "display": "flex",
+              "flexDirection": "column",
+              "alignItems": "flex-start",
+              "gap": "12px"
+            },
+            "tablet": {},
+            "mobile": {}
+          },
+          "children": [
+            {
+              "type": "component",
+              "component": "Badge",
+              "props": {
+                "text": "{{post.category}}"
+              }
+            },
+            {
+              "type": "component",
+              "component": "Heading",
+              "props": {
+                "text": "{{post.title}}",
+                "tag": "4"
+              },
+              "style": {
+                "base": {
+                  "margin": "0"
+                },
+                "tablet": {},
+                "mobile": {}
+              }
+            },
+            {
+              "type": "component",
+              "component": "Text",
+              "props": {
+                "text": "{{post.date}}",
+                "color": "light"
+              },
+              "style": {
+                "base": {
+                  "fontSize": "var(--te-fs)"
+                },
+                "tablet": {},
+                "mobile": {}
+              }
+            },
+            {
+              "type": "component",
+              "component": "Text",
+              "props": {
+                "text": "{{post.description}}"
+              },
+              "style": {
+                "base": {
+                  "marginTop": "4px"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "interface": {}
+  }
+}

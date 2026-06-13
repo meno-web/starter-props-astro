@@ -1,0 +1,61 @@
+{
+  "component": {
+    "structure": {
+      "type": "link",
+      "href": "{{link}}",
+      "style": {
+        "base": {
+          "padding": "var(--b-p)",
+          "display": "inline-flex",
+          "flexDirection": "row",
+          "justifyContent": "flex-start",
+          "alignItems": "stretch",
+          "backgroundColor": {
+            "_mapping": true,
+            "prop": "version",
+            "values": {
+              "default": "var(--accent)",
+              "secondary": "var(--gray-200)"
+            }
+          },
+          "borderRadius": "var(--b-br)",
+          "color": {
+            "_mapping": true,
+            "prop": "version",
+            "values": {
+              "default": "var(--white)",
+              "secondary": "var(--text)"
+            }
+          },
+          "fontSize": "var(--te-fs)"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "children": [
+        "{{text}}"
+      ]
+    },
+    "interface": {
+      "text": {
+        "type": "string",
+        "default": "Button"
+      },
+      "link": {
+        "type": "link",
+        "default": {
+          "href": "#"
+        }
+      },
+      "version": {
+        "type": "select",
+        "default": "default",
+        "options": [
+          "default",
+          "secondary"
+        ]
+      }
+    },
+    "acceptsStyles": true
+  }
+}

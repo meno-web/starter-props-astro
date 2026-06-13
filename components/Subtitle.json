@@ -1,0 +1,29 @@
+{
+  "component": {
+    "interface": {
+      "text": {
+        "type": "string",
+        "default": "Blog"
+      }
+    },
+    "structure": {
+      "type": "node",
+      "tag": "span",
+      "style": {
+        "base": {
+          "fontSize": "var(--s-fs)",
+          "letterSpacing": "var(--s-ls)",
+          "fontWeight": "var(--s-fw)",
+          "color": "var(--text)",
+          "textTransform": "var(--subtitle)",
+          "marginBottom": "var(--s-m)"
+        },
+        "tablet": {},
+        "mobile": {}
+      },
+      "children": [
+        "{{text}}"
+      ]
+    }
+  }
+}

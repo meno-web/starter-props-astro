@@ -1,0 +1,39 @@
+{
+  "component": {
+    "structure": {
+      "type": "node",
+      "tag": "div",
+      "style": {
+        "base": {
+          "backgroundColor": "var(--bg)",
+          "color": "var(--text)",
+          "minHeight": "100vh"
+        }
+      },
+      "children": [
+        {
+          "type": "component",
+          "component": "Navigation"
+        },
+        {
+          "type": "node",
+          "tag": "main",
+          "style": {
+            "base": {}
+          },
+          "children": [
+            {
+              "type": "slot"
+            }
+          ]
+        },
+        {
+          "type": "component",
+          "component": "Footer"
+        }
+      ]
+    },
+    "interface": {},
+    "css": "h1 .custom-span, \nh2 .custom-span, \nh3 .custom-span, \nh4 .custom-span, \nh5 .custom-span {\n  color: var(--span);\n}"
+  }
+}
