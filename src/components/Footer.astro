@@ -1,0 +1,156 @@
+---
+import { resolveProps, style } from 'meno-astro';
+import { Link } from 'meno-astro/components';
+import FooterLink from './FooterLink.astro';
+import FooterLinkTitle from './FooterLinkTitle.astro';
+import Text from './Text.astro';
+
+const __props = resolveProps(Astro, {});
+const { class: className } = __props;
+---
+<footer class={style({
+    base: {
+      padding: "var(--s-p)",
+      backgroundColor: "var(--bg)",
+      borderTop: "1px solid var(--border)"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true, label: "Footer" })}>
+  <div class={style({
+      base: { display: "block", maxWidth: "var(--c-s)", margin: "auto" },
+      tablet: {},
+      mobile: {}
+    }, __props, { label: "Container" })}>
+    <div class={style({
+        base: {
+          display: "grid",
+          gridTemplateColumns: "2fr 1fr 1fr 1fr",
+          gap: "40px"
+        },
+        tablet: { gridTemplateColumns: "1fr 1fr" },
+        mobile: { gridTemplateColumns: "1fr" }
+      }, __props, { label: "TopRow" })}>
+      <div class={style({}, __props, { label: "Brand" })}>
+        <span class={style({
+            base: {
+              display: "block",
+              fontSize: "22px",
+              fontWeight: "var(--h-fw)",
+              letterSpacing: "var(--h-ls)",
+              color: "var(--text)",
+              marginBottom: "12px"
+            },
+            tablet: {},
+            mobile: {}
+          }, __props)}>Starter</span>
+        <Text text="Short tagline that previews how this footer copy reads in the editor." color="light" class={style({ base: { maxWidth: "320px", margin: "0" }, tablet: {}, mobile: {} }, __props, { instance: true })} __menoStyle={{ base: { maxWidth: "320px", margin: "0" }, tablet: {}, mobile: {} }} />
+      </div>
+      <div class={style({}, __props, { label: "Column1" })}>
+        <FooterLinkTitle />
+        <ul class={style({
+            base: {
+              listStyle: "none",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              padding: "0",
+              margin: "0"
+            }
+          }, __props)}>
+          <FooterLink />
+          <FooterLink text="Pricing" link="#pricing" />
+          <FooterLink text="Integrations" link="#integrations" />
+        </ul>
+      </div>
+      <div class={style({}, __props, { label: "Column2" })}>
+        <FooterLinkTitle text="Company" />
+        <ul class={style({
+            base: {
+              listStyle: "none",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              padding: "0",
+              margin: "0"
+            }
+          }, __props)}>
+          <FooterLink text="About" link="#about" />
+          <FooterLink text="Blog" link="/blog" />
+          <FooterLink text="Careers" link="#careers" />
+        </ul>
+      </div>
+      <div class={style({}, __props, { label: "Column3" })}>
+        <FooterLinkTitle text="Support" />
+        <ul class={style({
+            base: {
+              listStyle: "none",
+              display: "flex",
+              flexDirection: "column",
+              gap: "10px",
+              padding: "0",
+              margin: "0"
+            }
+          }, __props)}>
+          <FooterLink text="Help Center" link="#help" />
+          <FooterLink text="Contact" link="#contact" />
+          <FooterLink text="Status" link="#status" />
+        </ul>
+      </div>
+    </div>
+    <div class={style({
+        base: {
+          borderTop: "1px solid var(--border)",
+          marginTop: "48px",
+          paddingTop: "24px",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center"
+        },
+        tablet: {},
+        mobile: { flexDirection: "column", gap: "16px", textAlign: "center" }
+      }, __props, { label: "BottomRow" })}>
+      <Text text="© 2026 Starter. All rights reserved." size="small" color="light" />
+      <div class={style({ base: { display: "flex", gap: "24px" } }, __props)}>
+        <Link href="#privacy" class={style({
+            base: {
+              fontSize: "14px",
+              letterSpacing: "var(--t-ls)",
+              fontWeight: "var(--t-fw)",
+              color: "var(--muted)",
+              textDecoration: "none",
+              transition: "color 0.2s"
+            }
+          }, __props, {
+            interactive: [
+              {
+                name: "hover",
+                prefix: "",
+                postfix: ":hover",
+                style: { base: { color: "var(--text)" } }
+              }
+            ]
+          })}>Privacy policy</Link>
+        <Link href="#terms" class={style({
+            base: {
+              fontSize: "14px",
+              letterSpacing: "var(--t-ls)",
+              fontWeight: "var(--t-fw)",
+              color: "var(--muted)",
+              textDecoration: "none",
+              transition: "color 0.2s"
+            }
+          }, __props, {
+            interactive: [
+              {
+                name: "hover",
+                prefix: "",
+                postfix: ":hover",
+                style: { base: { color: "var(--text)" } }
+              }
+            ]
+          })}>Terms of Service</Link>
+      </div>
+    </div>
+  </div>
+</footer>

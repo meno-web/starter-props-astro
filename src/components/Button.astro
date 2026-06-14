@@ -1,0 +1,40 @@
+---
+import { resolveProps, style } from 'meno-astro';
+import { Link } from 'meno-astro/components';
+
+const __props = resolveProps(Astro, {
+  text: { type: "string", default: "Button" },
+  link: { type: "link", default: { href: "#" } },
+  version: {
+    type: "select",
+    default: "default",
+    options: ["default", "secondary"]
+  }
+});
+const { text, link, version, class: className } = __props;
+
+const __meno = { acceptsStyles: true };
+---
+<Link href={link} class={style({
+    base: {
+      padding: "var(--b-p)",
+      display: "inline-flex",
+      flexDirection: "row",
+      justifyContent: "flex-start",
+      alignItems: "stretch",
+      backgroundColor: {
+        _mapping: true,
+        prop: "version",
+        values: { default: "var(--accent)", secondary: "var(--gray-200)" }
+      },
+      borderRadius: "var(--b-br)",
+      color: {
+        _mapping: true,
+        prop: "version",
+        values: { default: "var(--white)", secondary: "var(--text)" }
+      },
+      fontSize: "var(--te-fs)"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })}>{text}</Link>

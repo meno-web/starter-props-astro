@@ -114,6 +114,7 @@ el.addEventListener('open-modal', (e) => {
 5. Use \`data-el\` attributes for reliable element selection
 6. Use CustomEvent for cross-component communication
 7. **NEVER manually add data-component attribute** - The system adds it automatically
+8. **For scroll-position-driven effects** (e.g. nav color changing per section), use a rAF-throttled \`window\` scroll listener with \`getBoundingClientRect()\` reads — NOT an \`IntersectionObserver\` with a thin \`rootMargin\` scan band. The IO pattern is fragile inside the editor iframe (stale \`window.innerHeight\`, layout differences) and produces flickery / inconsistent updates; the scroll approach is robust and behaves the same in browser and editor.
 
 ### CRITICAL: Don't Add data-component Manually
 

@@ -1,0 +1,47 @@
+---
+import { getCollection } from 'astro:content';
+import { getCollectionList, style } from 'meno-astro';
+import { BaseLayout } from 'meno-astro/components';
+import BlogListCard from '../components/BlogListCard.astro';
+import Heading from '../components/Heading.astro';
+import Layout from '../components/Layout.astro';
+import Section from '../components/Section.astro';
+import Subtitle from '../components/Subtitle.astro';
+import Text from '../components/Text.astro';
+import '../styles/theme.css';
+
+const meta = { title: "Blog", description: "Browse all articles, tutorials, and insights." };
+
+const blogList = await getCollectionList("blog", { sort: { field: "_createdAt", order: "desc" } }, Astro, getCollection);
+---
+<BaseLayout meta={meta}>
+  <Layout>
+    <Section>
+      <div class={style({
+          base: {
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            textAlign: "center",
+            marginBottom: "52px"
+          },
+          tablet: {},
+          mobile: {}
+        })}>
+        <Subtitle text="Blog" />
+        <Heading text="All articles" class={style({ base: { marginBottom: "var(--h-m)", textAlign: "center" } }, undefined, { instance: true })} __menoStyle={{ base: { marginBottom: "var(--h-m)", textAlign: "center" } }} />
+        <Text text="Browse every post, tutorial, and insight we've published." class={style({ base: { textAlign: "center", maxWidth: "520px" } }, undefined, { instance: true })} __menoStyle={{ base: { textAlign: "center", maxWidth: "520px" } }} />
+      </div>
+      <div class={style({
+          base: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px" },
+          tablet: {},
+          mobile: {}
+        })}>
+        {blogList.map((post, postIndex) => (
+          <BlogListCard post={post} />
+        ))}
+      </div>
+    </Section>
+  </Layout>
+</BaseLayout>

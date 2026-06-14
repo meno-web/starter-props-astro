@@ -1,0 +1,49 @@
+---
+import { resolveProps, style } from 'meno-astro';
+import { Link } from 'meno-astro/components';
+import Badge from './Badge.astro';
+import Heading from './Heading.astro';
+import Text from './Text.astro';
+
+const __props = resolveProps(Astro, {});
+const { class: className } = __props;
+const { post } = Astro.props;
+---
+<Link href={post._url} class={style({
+    base: {
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "flex-start",
+      alignItems: "stretch",
+      backgroundColor: "var(--bg)",
+      borderRadius: "8px",
+      overflow: "hidden",
+      border: "1px solid var(--border)",
+      color: "var(--text)",
+      textDecoration: "none"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })}>
+  <img class={style({
+      base: { aspectRatio: "16 / 10", objectFit: "cover" },
+      tablet: {},
+      mobile: {}
+    }, __props)} src={post.image || undefined} alt={post.title || undefined} />
+  <div class={style({
+      base: {
+        padding: "24px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "flex-start",
+        gap: "12px"
+      },
+      tablet: {},
+      mobile: {}
+    }, __props)}>
+    <Badge text={post.category} />
+    <Heading text={post.title} tag="4" class={style({ base: { margin: "0" }, tablet: {}, mobile: {} }, __props, { instance: true })} __menoStyle={{ base: { margin: "0" }, tablet: {}, mobile: {} }} />
+    <Text text={post.date} color="light" class={style({ base: { fontSize: "var(--te-fs)" }, tablet: {}, mobile: {} }, __props, { instance: true })} __menoStyle={{ base: { fontSize: "var(--te-fs)" }, tablet: {}, mobile: {} }} />
+    <Text text={post.description} class={style({ base: { marginTop: "4px" } }, __props, { instance: true })} __menoStyle={{ base: { marginTop: "4px" } }} />
+  </div>
+</Link>

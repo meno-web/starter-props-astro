@@ -1,0 +1,76 @@
+---
+import { resolveProps, style } from 'meno-astro';
+
+const __props = resolveProps(Astro, {
+  content: { type: "rich-text", default: "Rich text", editor: "extended" }
+});
+const { content, class: className } = __props;
+
+const __meno = { acceptsStyles: true };
+---
+<div class={style({
+    base: {
+      lineHeight: "1.7",
+      fontSize: "18px",
+      color: "var(--text)",
+      letterSpacing: "-0.01em"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })} cmsrt={true}><Fragment set:html={content} /></div>
+
+
+<style is:global>
+[cmsrt] h1,
+[cmsrt] h2,
+[cmsrt] h3,
+[cmsrt] h4,
+[cmsrt] h5,
+[cmsrt] h6 {
+  font-weight: 450;
+  margin-top: 32px;
+  margin-bottom: 4px;
+}
+
+[cmsrt] h2 {
+  font-size: 36px;
+}
+
+[cmsrt] h3 {
+  font-size: 26px;
+}
+
+[cmsrt] p {
+  margin-bottom: 16px;
+}
+
+[cmsrt] a {
+  color: var(--text);
+  text-decoration: underline;
+}
+
+[cmsrt] ul,
+[cmsrt] ol {
+  margin: 0 0 16px;
+  padding-left: 24px;
+}
+
+[cmsrt] li {
+  margin-bottom: 6px;
+}
+
+[cmsrt] blockquote {
+  border-left: 2px solid var(--border);
+  padding-left: 16px;
+  margin: 24px 0;
+  color: var(--muted);
+  font-style: italic;
+}
+
+[cmsrt] img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 24px 0;
+}
+</style>
