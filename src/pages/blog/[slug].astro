@@ -1,0 +1,75 @@
+---
+import { getCollection } from 'astro:content';
+import { i18n, style } from 'meno-astro';
+import { BaseLayout } from 'meno-astro/components';
+import Badge from '../../components/Badge.astro';
+import Heading from '../../components/Heading.astro';
+import Layout from '../../components/Layout.astro';
+import RichText from '../../components/RichText.astro';
+import Section from '../../components/Section.astro';
+import Text from '../../components/Text.astro';
+import '../../styles/theme.css';
+
+export async function getStaticPaths() {
+  const entries = await getCollection("blog");
+  return entries.map((entry) => ({
+    params: { slug: entry.data.slug ?? entry.id },
+    props: { cms: entry.data },
+  }));
+}
+
+const { cms } = Astro.props;
+
+const meta = {
+  title: "{{cms.title}}",
+  description: "{{cms.description}}",
+  source: "cms",
+  cms: {
+    id: "blog",
+    name: "Blog",
+    slugField: "slug",
+    urlPattern: "/blog/{{slug}}",
+    fields: {
+      title: { type: "string", label: "Title", required: true },
+      slug: { type: "string", label: "URL Slug", required: true },
+      category: { type: "string", label: "Category" },
+      date: { type: "string", label: "Date" },
+      description: { type: "text", label: "Description" },
+      image: { type: "image", label: "Cover image" },
+      content: { type: "rich-text", label: "Content" }
+    }
+  }
+};
+---
+<BaseLayout meta={meta}>
+  <Layout cms={cms}>
+    <Section cms={cms}>
+      <div class={style({ base: { maxWidth: "var(--co-s)", margin: "auto" }, tablet: {}, mobile: {} })}>
+        <Badge text={i18n(cms.category)} cms={cms} class={style({ base: { fontSize: "14px", marginBottom: "16px" } }, undefined, { instance: true })} __menoStyle={{ base: { fontSize: "14px", marginBottom: "16px" } }} />
+        <Heading text={i18n(cms.title)} cms={cms} class={style({ base: { marginBottom: "var(--h-m)" } }, undefined, { instance: true })} __menoStyle={{ base: { marginBottom: "var(--h-m)" } }} />
+        <Text text={i18n(cms.date)} color="light" cms={cms} />
+        <img class={style({
+            base: {
+              width: "100%",
+              aspectRatio: "16 / 9",
+              objectFit: "cover",
+              borderRadius: "8px",
+              marginTop: "32px",
+              marginBottom: "32px"
+            },
+            tablet: {},
+            mobile: {}
+          })} src={i18n(cms.image) || undefined} alt={i18n(cms.title) || undefined} />
+        <RichText content={i18n(cms.content)} cms={cms} class={style({
+            base: { marginTop: "24px", maxWidth: "621px", margin: "auto" },
+            tablet: {},
+            mobile: {}
+          }, undefined, { instance: true })} __menoStyle={{
+            base: { marginTop: "24px", maxWidth: "621px", margin: "auto" },
+            tablet: {},
+            mobile: {}
+          }} />
+      </div>
+    </Section>
+  </Layout>
+</BaseLayout>

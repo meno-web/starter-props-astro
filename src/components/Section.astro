@@ -1,0 +1,19 @@
+---
+import { resolveProps, style } from 'meno-astro';
+
+const __props = resolveProps(Astro, {});
+const { class: className } = __props;
+
+const __meno = { acceptsStyles: true };
+---
+<section class={style({
+    base: { padding: "var(--s-p)", backgroundColor: "var(--bg)" },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })}>
+  <container class={style({
+      base: { display: "block", maxWidth: "var(--c-s)", margin: "auto" },
+      tablet: {},
+      mobile: {}
+    }, __props)}><slot /></container>
+</section>

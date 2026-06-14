@@ -1,0 +1,21 @@
+---
+import { resolveProps, style } from 'meno-astro';
+
+const __props = resolveProps(Astro, {
+  text: { type: "string", default: "Product" }
+});
+const { text, class: className } = __props;
+---
+<span class={style({
+    base: {
+      display: "block",
+      fontSize: "var(--s-fs)",
+      letterSpacing: "var(--s-ls)",
+      fontWeight: "var(--s-fw)",
+      textTransform: "var(--subtitle)",
+      color: "var(--text)",
+      marginBottom: "16px"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })}>{text}</span>

@@ -1,0 +1,23 @@
+---
+import { resolveProps, style } from 'meno-astro';
+
+const __props = resolveProps(Astro, {
+  text: { type: "string", default: "Badge" }
+});
+const { text, class: className } = __props;
+
+const __meno = { acceptsStyles: true };
+---
+<span class={style({
+    base: {
+      display: "inline-block",
+      padding: "4px 12px",
+      backgroundColor: "var(--gray-100)",
+      borderRadius: "999px",
+      fontSize: "var(--tex-fs)",
+      fontWeight: "500",
+      color: "var(--text)"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })}>{text}</span>

@@ -1,0 +1,39 @@
+---
+import { resolveProps, style } from 'meno-astro';
+
+const __props = resolveProps(Astro, {
+  text: {
+    type: "rich-text",
+    default: "<!--MENO_RAW_HTML-->Everything you <span class=\"custom-span\" data-meno-span=\"true\">need</span> to build professional website"
+  },
+  tag: { type: "select", default: "1", options: ["1", "2", "3", "4", "5", "6"] }
+});
+const { text, tag, class: className } = __props;
+
+const __meno = { acceptsStyles: true };
+
+const Tag_0 = `h${tag}`;
+---
+<Tag_0 class={style({
+    base: {
+      fontSize: {
+        _mapping: true,
+        prop: "tag",
+        values: {
+          "1": "var(--h-fs)",
+          "2": "var(--he-fs)",
+          "3": "var(--hea-fs)",
+          "4": "var(--head-fs)",
+          "5": "22px",
+          "6": "20px",
+          default: "var(--h-fs)"
+        }
+      },
+      letterSpacing: "var(--h-ls)",
+      fontWeight: "var(--h-fw)",
+      lineHeight: "var(--h-lh)",
+      color: "var(--text)"
+    },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })}><Fragment set:html={text} /></Tag_0>

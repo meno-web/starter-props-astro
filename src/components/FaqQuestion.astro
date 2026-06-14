@@ -1,0 +1,113 @@
+---
+import { resolveProps, style } from 'meno-astro';
+import Heading from './Heading.astro';
+import Text from './Text.astro';
+
+const __props = resolveProps(Astro, {
+  question: { type: "string", default: "First question" },
+  answer: {
+    type: "string",
+    default: "Short supporting description that previews how this section looks and reads in the editor"
+  },
+  isOpen: { type: "boolean", default: false }
+});
+const { question, answer, isOpen, class: className } = __props;
+---
+<div class={style({
+    base: { width: "100%", borderBottom: "1px solid var(--border, #e0e0e0)" },
+    tablet: {},
+    mobile: {}
+  }, __props, { root: true })} data-faq-item="true">
+  <button class={style({
+      base: {
+        width: "100%",
+        padding: "20px 0",
+        background: "transparent",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        gap: "16px"
+      },
+      tablet: {},
+      mobile: {}
+    }, __props)} data-faq-toggle="true" type="button">
+    <Heading text={question} tag="3" />
+    <span class={style({
+        base: {
+          fontSize: "20px",
+          transition: "transform 0.3s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: "var(--text)",
+          flexShrink: 0
+        },
+        tablet: {},
+        mobile: {}
+      }, __props, {
+        interactive: [
+          {
+            name: "when open",
+            prefix: "[data-faq-item].is-open ",
+            postfix: "",
+            style: { base: { transform: "rotate(45deg)" } },
+            previewProp: "isOpen"
+          }
+        ]
+      })} data-faq-icon="true">+</span>
+  </button>
+  <div class={style({
+      base: {
+        maxHeight: "0",
+        overflow: "hidden",
+        transition: "max-height 0.3s ease, padding 0.3s ease",
+        paddingBottom: "0"
+      },
+      tablet: {},
+      mobile: {}
+    }, __props, {
+      interactive: [
+        {
+          name: "when open",
+          prefix: "[data-faq-item].is-open ",
+          postfix: "",
+          style: { base: { maxHeight: "1000px", paddingBottom: "20px" } },
+          previewProp: "isOpen"
+        }
+      ]
+    })} data-faq-answer="true"><Text text={answer} size="medium" class={style({ base: { maxWidth: "530px", margin: "0 0 20px 0" } }, __props, { instance: true })} __menoStyle={{ base: { maxWidth: "530px", margin: "0 0 20px 0" } }} /></div>
+</div>
+
+
+<script define:vars={{ question, answer, isOpen }}>
+(function(el, props){
+const toggle = el.querySelector('[data-faq-toggle]');
+const answerEl = el.querySelector('[data-faq-answer]');
+const icon = el.querySelector('[data-faq-icon]');
+
+if (toggle && answerEl) {
+  const updateHeight = () => {
+    if (el.getAttribute('data-expanded') === 'true') {
+      answerEl.style.maxHeight = answerEl.scrollHeight + 'px';
+      answerEl.style.paddingBottom = '20px';
+      icon.style.transform = 'rotate(45deg)';
+    } else {
+      answerEl.style.maxHeight = '0';
+      answerEl.style.paddingBottom = '0';
+      icon.style.transform = 'rotate(0deg)';
+    }
+  };
+
+  toggle.addEventListener('click', () => {
+    const isExpanded = el.getAttribute('data-expanded') === 'true';
+    el.setAttribute('data-expanded', isExpanded ? 'false' : 'true');
+    updateHeight();
+  });
+
+  window.addEventListener('resize', updateHeight);
+}
+
+})((function(){var s=document.currentScript,e=s&&s.previousElementSibling;while(e&&(e.nodeName==='STYLE'||e.nodeName==='SCRIPT'))e=e.previousElementSibling;return e||null;})(), { question, answer, isOpen });
+</script>

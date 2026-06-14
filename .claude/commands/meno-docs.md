@@ -17,41 +17,44 @@ Load Meno documentation for the specified topic to provide context for your task
 
 | Topic | Description |
 |-------|-------------|
-| `examples` | Copy-ready patterns: Layout, Navigation, Hero, Card grid, CMS template, Footer, FAQ with .js + .css |
-| `cms-schema` | CMS collections, field types, URL patterns |
-| `javascript` | `defineVars`, vanilla JS patterns, component communication |
+| `core` | Essential editing rules, node types, style objects |
+| `components` | Component interfaces, props, slots, structure |
+| `meno-astro-dialect` | The `.astro` dialect grammar — page/component shape, round-tripping |
+| `meno-astro-api` | Studio dev-server API surface (format-transparent reads/writes) |
+| `javascript` | defineVars, vanilla JS, component communication |
 | `libraries` | External scripts and CSP configuration |
 | `redirects` | URL redirects for static hosting |
 | `meno-filter` | Client-side filtering with data attributes |
 | `meno-filter-api` | MenoFilter JavaScript API |
-| `website-convert` | Converting imported website analysis to Meno components |
-
-For node types, interface prop types, template expressions, interactive styles, conditional rendering, locales/i18n, page meta, and project config — see the root `CLAUDE.md`.
+| `studio-port` | Resolving the Studio editor port (non-interactive) |
+| `extract-components-catalog` | Catalog of UI primitives / block components to mine |
+| `import-site-loop` | The import pipeline loop and checkpointing |
 
 ## Instructions
 
 $ARGUMENTS contains the topic requested by the user.
 
-1. Parse the topic from $ARGUMENTS (e.g., `examples`, `cms-schema`)
-2. If no topic provided or topic is `all`, list available topics
+1. Parse the topic from $ARGUMENTS (e.g., "components", "meno-astro-dialect")
+2. If no topic provided or topic is "all", list available topics
 3. Read the documentation file from `.claude/docs/meno/{topic}.md`
 4. Present the documentation content to help with the current task
 
 ### Topic Aliases
-- `cms` → `cms-schema`
+- `dialect` → `meno-astro-dialect`
+- `api` → `meno-astro-api`
 - `filter` → `meno-filter`
 - `filter-api` → `meno-filter-api`
 - `js` → `javascript`
-- `convert` → `website-convert`
-- `import` → `website-convert`
-- `example` → `examples`
+- `port` → `studio-port`
+- `catalog` → `extract-components-catalog`
+- `import` → `import-site-loop`
 
 ### Multi-topic Loading
 If user requests multiple topics (comma-separated), load all of them:
-- `/meno-docs examples,cms-schema` → Load both examples and cms-schema docs
+- `/meno-docs components,libraries` → Load both components and libraries docs
 
 ## Example
 
-User: `/meno-docs examples`
+User: `/meno-docs components`
 
-Response: Read and present the content of `.claude/docs/meno/examples.md`
+Response: Read and present the content of `.claude/docs/meno/components.md`

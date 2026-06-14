@@ -51,5 +51,6 @@
   "deploy": {
     "method": "cloudflare"
   },
-  "name": "starter-props-astro"
+  "name": "starter-props-astro",
+  "format": "astro"
 }
