@@ -84,7 +84,11 @@ Read those if `$ARGUMENTS` needs detail beyond this cheat-sheet.
    - `<Link href="/x">…</Link>` (link) · `href={i18n({...})}` or `href={href({...})}` for
      i18n/mapping hrefs.
    - `<Embed html={`<svg>…</svg>`} />` (single-line) or hoist multi-line HTML to a
-     frontmatter `const __embedN = \`…\`` and use `html={__embedN}`.
+     frontmatter `const __embedN = \`…\`` and use `html={__embedN}`. `__embedN` is the
+     **canonical** name (0-based + sequential). A custom-named hoist (`const __iconChat = …`)
+     still round-trips — the HTML is recovered — but emit renames it to `__embedN` on save, so
+     don't expect a semantic name to survive. (Only a frontmatter backtick const is inlined;
+     `html={prop}` / `html={i18n(cms.field)}` stay bindings — a prop-bound embed.)
    - `<slot />` / `<slot>fallback</slot>`.
    - `<LocaleList … />` (locale switcher; style sub-props wrapped in `style(...)`, editor
      meta in a single `meta={{...}}`).

@@ -34,7 +34,7 @@ Declared in `packages/astro/package.json`:
 | `meno-astro/components` | `lib/components/index.ts` | The `.astro` runtime components emitted markup imports: `BaseLayout`, `Link`, `Embed`, `LocaleList`. |
 | `meno-astro/runtime/localeMiddleware` | `lib/runtime/localeMiddleware.ts` | The injected middleware module (`onRequest`) the integration points Astro at. |
 
-`dialectVersion` (a `const` string, currently `'0.1.3'`) is exported from the root entry.
+`dialectVersion` (a `const` string, currently `'0.1.4'`) is exported from the root entry.
 It is written into generated projects so a project can be migrated forward if the on-disk
 dialect format evolves. It is part of the package's **semver contract**: a change to the
 emitted dialect shape that older `parse()` cannot read back must bump `dialectVersion`.
@@ -47,7 +47,7 @@ emitted dialect shape that older `parse()` cannot read back must bump `dialectVe
 
 | Export | Type | Description |
 |---|---|---|
-| `dialectVersion` | `'0.1.3'` (literal `const`) | On-disk dialect format version; semver-tracked. 0.1.3 = rich-text text children emit `richTextWithComponents(…, cmsComponents)` + the generated registry import. |
+| `dialectVersion` | `'0.1.4'` (literal `const`) | On-disk dialect format version; semver-tracked. 0.1.3 = rich-text text children emit `richTextWithComponents(…, cmsComponents)` + the generated registry import. 0.1.4 = `<Embed html={ident} />` resolves a hoisted frontmatter backtick const under any name (parse-side recovery; emitted shape unchanged). |
 
 ### Model types (re-exported from `meno-core/shared/types`)
 

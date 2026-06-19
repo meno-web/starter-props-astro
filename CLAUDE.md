@@ -1,4 +1,4 @@
-<!-- MENO_DOCS_VERSION: 0.1.3 -->
+<!-- MENO_DOCS_VERSION: 0.1.4 -->
 # Meno — Visual CMS for Astro
 
 This is an **Astro project** — standard `src/pages` and `src/components` `.astro` files plus Astro
@@ -94,7 +94,10 @@ images/  fonts/  icons/    — assets, referenced with absolute paths (/images/h
 8. **Other node forms (use the exact tags):**
    - `<Link href="/x">…</Link>` (link); `href={i18n({...})}` or `href={href({...})}` for i18n / mapping hrefs.
    - `<Embed html={`<svg>…</svg>`} />` (single-line) or hoist multi-line HTML to a frontmatter
-     `const __embedN = \`…\`` and use `html={__embedN}`.
+     `const __embedN = \`…\`` and use `html={__embedN}`. `__embedN` is the **canonical** hoist
+     name (0-based + sequential: `__embed0`, `__embed1`, …). A hand-authored hoist under a
+     different name (`const __iconChat = …`) still round-trips — the HTML is recovered — but
+     emit renames the const to `__embedN` on save, so don't rely on a semantic name surviving.
    - `<slot />` / `<slot>fallback</slot>`.
    - `<LocaleList … />` (locale switcher; style sub-props wrapped in `style(...)`, editor meta in a
      single `meta={{...}}`).

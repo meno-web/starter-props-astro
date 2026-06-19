@@ -427,6 +427,29 @@ const __embed0 = `<svg width="515" height="84" …>
 <Embed html={__embed0} />
 ```
 
+**The hoist-const name is canonicalized, not load-bearing.** The emitter always names these
+consts `__embed<N>` — `N` a 0-based, sequential integer (`__embed0`, `__embed1`, …) — and that
+is the canonical form to author. The name is *normalized on save* like every other literal
+(§9): the parser recovers the verbatim HTML by resolving **any** bare `html={ident}` whose
+`ident` is a frontmatter backtick-template const, so a hand-authored hoist under a different
+name is **never lost** — but the next emit re-hoists it as `__embed<N>`, so the name does not
+survive the round-trip:
+
+```astro
+---
+const __iconChat = `<svg viewBox="0 0 24 24">
+<path d="…" />
+</svg>`;
+---
+<Embed html={__iconChat} />   <!-- HTML preserved; on the next save the const + ref come
+                                   back as `__embed0` — author a semantic name only if you
+                                   don't mind it being renamed. -->
+```
+
+> Only a frontmatter **backtick-template const** is inlined this way. A bare `html={prop}`
+> that names a real component prop (or `html={i18n(cms.field)}` / `html={embedHtml(…)}`) stays
+> a binding — that is a prop-bound embed, not a hoist.
+
 If `html` is *not* a string (a structured value), it is wrapped in `embedHtml({…})`.
 
 ### 4.5 `slot`
@@ -506,6 +529,49 @@ const productsList = await getCollectionList("products", { emitTemplate: true },
 > (e.g. `filter-demo` emits `.map((item, itemIndex) => …)`). A *native* collection list
 > authored with `sourceType: "collection"` and no `itemAs` still defaults its loop
 > variable to `singularize(source)`, so write its children's templates to match.
+
+---
+
+#### 5.2.1 Client-side filtering (`emitTemplate: true` → MenoFilter)
+
+A collection list with **`emitTemplate: true`** is *filter-wired*: it powers the client-side
+**MenoFilter** runtime (filter / search / sort / paginate the CMS list, with facet + result
+counts) declaratively, via `data-meno-*` attributes the converter already round-trips (a
+`[data-meno-filter="<collection>"]` wrapper around `[data-meno-list]` + filter controls).
+There is no new authoring surface — the JSON `cms-list` already carried `emitTemplate` and the
+filter attributes; the dialect just emits the three things the runtime needs:
+
+1. **The runtime.** `BaseLayout` injects `menoFilterScript` before `</body>` (self-gating —
+   a no-op when the page has no `[data-meno-filter]`), alongside `formHandlerScript`. Off the
+   already-emitted `data-<field>` card attributes alone it does **DOM-only** filtering
+   (string filters, text search, sort, pagination).
+2. **Inline data.** After the page/component body (a sibling of the page root) the emitter
+   adds, per distinct collection, `<script type="application/json" id="meno-cms-<collection>"
+   set:html={serializeClientCmsData(<binding>)}>` — the queried items (with their synthesized
+   `_url`/`_id`). This is what unlocks **JSON mode**: type coercion (`data-meno-types`),
+   numeric/date range filters, and facet/total counts. The runtime reuses the SSR cards by
+   `data-id`, so the static HTML stays the SEO / no-JS baseline.
+3. **An item template.** As the last child of `[data-meno-list]` the emitter adds
+   `<template data-meno-item>` — the card rendered over a *synthetic placeholder item*, so
+   `style()`/component calls resolve to real build-time output while each `{{item.<field>}}`
+   survives as a literal placeholder. Its **presence** is what switches the runtime into JSON
+   mode and keys the SSR cards by `data-id`; its content renders an item that wasn't
+   server-rendered (a `data-id` miss).
+
+For pages that don't embed the list inline (or large collections), every collection whose
+schema sets **`meta.cms.clientData.enabled: true`** also gets a prerendered static endpoint at
+**`src/pages/data/<collection>/index.json.ts`** (→ `/data/<collection>/index.json`) — the
+runtime's `static` fetch strategy, the same projected items as the inline payload.
+
+All three artifacts are **emit-derived**: the parser drops the data script, the item template,
+and the endpoint, and they are re-derived from the list's `emitTemplate` flag (and the schema's
+`clientData`) on every emit — so the model round-trips unchanged. The `<` in the JSON payload is
+escaped (`<`) so a field value containing `</script>` can't break out of the inline block.
+
+> **Caveat (play preview).** The runtime + inline data are `<script is:inline>`, which the
+> Electron play preview's CSP blocks (it has no nonce — see the play CSP note in the docs).
+> Client filtering therefore works in a real deployed build but is inert in the in-app play
+> iframe, the same limitation as `formHandlerScript`.
 
 ---
 
