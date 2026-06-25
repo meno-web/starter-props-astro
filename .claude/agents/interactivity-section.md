@@ -79,7 +79,7 @@ STEP 2 — MATCH AGAINST THE PATTERN CATALOG
 
   >>> DELEGATE-TO-CHILD RULE (read this BEFORE matching) <<<
 
-  After /extract-components has run, sections reference block components
+  In a componentized page, sections reference block components
   (FAQItem, PricingTier, TeamMember, Button, ...) instead of having raw
   inline trees. This changes WHERE behavior should live.
 

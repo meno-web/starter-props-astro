@@ -31,7 +31,7 @@ Declared in `packages/astro/package.json`:
 | `meno-astro/dialect` | `lib/dialect/index.ts` | The codec: `emit`, `parse`, `normalizeModel`. Editor/build-only. |
 | `meno-astro/server` | `lib/server/index.ts` | Filesystem providers + conversion + format detection + loaders (`loadI18nConfig`, `loadSiteUrl`, `loadSlugMappings`, …). Server/build-only. |
 | `meno-astro/integration` | `lib/integration/index.ts` | The `meno()` Astro integration (default export): wires i18n routing + injects the locale middleware. |
-| `meno-astro/components` | `lib/components/index.ts` | The `.astro` runtime components emitted markup imports: `BaseLayout`, `Link`, `Embed`, `LocaleList`. |
+| `meno-astro/components` | `lib/components/index.ts` | The `.astro` runtime components emitted markup imports: `BaseLayout`, `Link`, `Embed`, `LocaleList`, `MenoImage`, `Markdown`. |
 | `meno-astro/runtime/localeMiddleware` | `lib/runtime/localeMiddleware.ts` | The injected middleware module (`onRequest`) the integration points Astro at. |
 
 `dialectVersion` (a `const` string, currently `'0.1.4'`) is exported from the root entry.
@@ -220,7 +220,9 @@ UNVERIFIED** pending a real `astro build`.
 
 | Component | Role |
 |---|---|
-| `BaseLayout.astro` | Page shell. `<html lang={Astro.currentLocale ?? <defaultLocale>}>`; `<head>` renders `meta.title` / `meta.description` **resolved through `i18n()`** (they may be i18n values); `<body><slot /></body>`; after the slot, drains `flushCollectedStyles()` into a `<style set:html>` so collected CSS lands in the page. |
+| `BaseLayout.astro` | Page shell. `<html lang={Astro.currentLocale ?? <defaultLocale>}>`; `<head>` renders `meta.title` / `meta.description` **resolved through `i18n()`** (they may be i18n values), favicons (`loadIconsConfig`, light/dark split), canonical + hreflang links, and the global utility stylesheet. Also wires the **head/SEO/config features**: `<ClientRouter>` when `meta.viewTransitions`, `<meta name="robots" content="noindex">` when `meta.noindex`, and raw author `customCode` (project-wide `loadCustomCode` merged with `meta.customCode`) injected into `<head>` / after `<body>` / before `</body>`. |
+| `MenoImage.astro` | Optimized-image wrapper around Astro's `astro:assets` `<Image>`. The render target for an `<img data-meno-optimize="true">` node (dialect §4.1). Remote sources need an allow-listed host in `project.config.json` `image.domains`. |
+| `Markdown.astro` | Renders a `markdown` node's verbatim `source` to HTML at build via `set:html={renderMarkdown(source)}` (dialect §4.8). |
 | `LocaleList.astro` | Locale switcher. One link per `config.locales` (via `loadI18nConfig(process.cwd())`), each pointing at the current page in that locale, **slug-translated** through the project slug map (`localeListItems`: `/about` ↔ `/pl/o-nas`; default locale un-prefixed), marking `Astro.currentLocale` (`aria-current`/`is-active`). CMS pages with `exactLocales` drop draft-hidden locales (their URLs are never built). |
 | `Link.astro` | `<a href={href} class={class} {...rest}><slot /></a>` with the flattened href **localized to the active render locale** (`localizeHref` — `/about` renders as `/pl/o-nas` on pl pages). |
 | `Embed.astro` | Raw-HTML injector (`set:html`; wrapped in a `<div>` only when a `class`/attrs are supplied, else a bare `<Fragment>`), with internal `<a href>`s localized (`localizeRichTextLinks`). The render form for an **embed node** bound to a CMS `rich-text` field — `<Embed html={i18n(cms.field)} />` — it normalizes a TipTap-doc / `{ __richtext__, … }` value to HTML (via `toHtmlString`) before injecting, so a plain `{i18n(cms.field)}` (which prints `[object Object]`) is never used for rich-text. (A rich-text field bound as a **text child** emits `<Fragment set:html={richTextWithComponents(cms.field, cmsComponents)} />` instead — see the rich-text render pipeline section above.) |
@@ -247,6 +249,7 @@ The thin, scope-aware wrappers the generated markup calls (the rest of the
 | `embedHtml(value, props?)` | `(structured, props?) => string` | Resolve a structured embed payload to an HTML string. |
 | `queryList(items, query)` | `(any[], query) => any[]` | In-memory filter/sort/limit over an already-fetched list (nested collection lists filtered by an outer loop var). |
 | `inlineStyle(decls, props?)` | `(Record<string, string>, props?) => string \| undefined` | Render prop-bound root styles as an inline `style=…`, suppressing declarations the instance class overrides (so instance utility classes win). |
+| `renderMarkdown(source)` | `(string) => string` | Render a `markdown` node's verbatim Markdown `source` to HTML at build/SSR (markdown-it, mirroring meno-core's shared config). Used by `Markdown.astro` (dialect §4.8). |
 
 ---
 
@@ -317,6 +320,20 @@ components from `src/components`:
 > **Component SAVE is NOT handled here.** Component writes still go through
 > `ComponentService`'s JSON path. Making component saves write `.astro` (a format-aware
 > components dir) is the remaining piece — see [Status](#status).
+
+### Config & SEO loaders (`lib/server/*`) — implemented
+
+Mtime-memoized `project.config.json` readers consumed by `BaseLayout` (per render) and the
+`meno()` integration (`astro:config:setup`). All **never throw** — a missing/unparseable
+config degrades to "feature off". Each is also re-exported from `meno-astro/server`.
+
+| Export | Signature | Description |
+|---|---|---|
+| `loadCustomCode` | `(projectRoot) => { head?, bodyStart?, bodyEnd? }` | Project-wide `customCode` HTML. The dialect twin of meno-core SSR's custom-code block. |
+| `mergeCustomCode` | `(global, page?) => { head, bodyStart, bodyEnd }` | Merge project-wide + a page's `meta.customCode` (global first, page appended), the order `BaseLayout` injects. |
+| `loadAstroConfigExtras` | `(projectRoot) => { redirects?, image?, prefetch?, devToolbar? }` | Maps Studio settings onto **Astro config** options the integration applies via `updateConfig`: `redirects` (`[{from,to,status?}]` → Astro's map), `image.domains` (remote hosts the optimizing `<MenoImage>` may process), `prefetch` (Meno `PrefetchConfig` → Astro native prefetch), `devToolbar`. Only keys actually set are returned. **In play mode the integration drops `prefetch` and forces `devToolbar` to the explicit setting** (Astro defaults the toolbar on in dev). |
+| `loadSitemapMeta` | `(projectRoot) => Map<routePath, { priority?, changefreq?, exclude? }>` | Per-page `meta.sitemap` collected from every `src/pages/**.astro` (build-only), keyed by normalized route path incl. every locale variant — consumed by the `sitemap.xml` hook. `exclude` drops the page; `priority` (0..1) / `changefreq` (enum) annotate it. |
+| `loadIconsConfig` | `(projectRoot) => { favicon?, faviconDark?, appleTouchIcon? }` | Project `icons` → BaseLayout `<link rel="icon">` (light/dark split when both favicon + faviconDark set). |
 
 ### `detectProjectFormat` + dir helpers — implemented
 
@@ -421,17 +438,49 @@ A concise implemented / pending map. Verified against the source on
   `ComponentService`).
 - **`.astro` file-watcher** — provider-based page reload covers externally-edited
   `.astro` files (`FileWatcherService` → `pageService.reloadPageFromDisk`).
+- **Head / SEO / project config** — `meta.viewTransitions` (`<ClientRouter>`), `meta.noindex`,
+  per-page `meta.sitemap` (priority/changefreq/exclude), page + project `customCode`
+  injection, favicons (`loadIconsConfig`), and the `project.config.json`-driven Astro options
+  `redirects` / `image.domains` / `prefetch` / `devToolbar` (`loadAstroConfigExtras`,
+  applied at `config:setup`; play drops prefetch + forces the explicit devToolbar).
+- **Optimized images** — `<img data-meno-optimize="true">` → `<MenoImage>` (`astro:assets`);
+  remote sources gated by `image.domains`.
+- **Markdown node** — `type:"markdown"` verbatim source → `<Markdown>` / `renderMarkdown()`.
+- **Astro Islands** — BYO React/Preact/Vue/Svelte components under `src/islands/`; the
+  `meno()` integration auto-provisions the `@astrojs/<fw>` renderer (dialect §4.7).
+- **Custom components** — `type:"custom"`, an opaque foreign `.astro` under `src/custom/`. A
+  plain native Astro import (no renderer, **no provisioning**, ships in the app with no
+  `meno-astro` publish); Meno passes only explicit props + slotted children and treats the
+  internals as a server-only black box (dialect §4.9; real-build e2e `custom-e2e.mjs`). The
+  server-only sibling of an island.
+- **SSR output + adapter** — declared in **`project.config.json`** as `"output": "server"` +
+  `"adapter": { "name": "node" | "cloudflare" | "netlify" | "vercel", "mode"?: "standalone" |
+  "middleware" }` (read by `loadAstroConfigExtras`). `meno()` sets `output` and registers
+  `@astrojs/<adapter>` for you (provisioned via `MENO_ASTRO_ADAPTER`); a missing adapter degrades
+  to a clean static build. See the ⚠️ rule below — **never import the adapter in `astro.config.mjs`.**
+
+> ⚠️ **Editing `astro.config.mjs` — never add an adapter or any 3rd-party import.** The Meno preview
+> runs `astro dev` against a **shared runtime store** that only carries `astro`, `meno-astro`,
+> `meno-core` (+ reserved). So `astro.config.mjs` may **only import from `astro/config`, `meno-astro`,
+> or `meno-astro/integration`** (`ALLOWED_CONFIG_IMPORTS`). An SSR adapter (`@astrojs/node`/…), another
+> integration, or any foreign package isn't in the store, so the `inspectAstroConfig` guard refuses the
+> preview: *"This project has a custom astro.config that imports \"<pkg>\", which the shared Astro
+> preview runtime doesn't include."* **Configure SSR in `project.config.json` (above), not the config.**
+> The canonical config stays `defineConfig({ integrations: [meno()] })` (+ optional `env: { schema }`
+> for `astro:env`, allowed because `envField` is from `astro/config`).
 
 ### NOT yet implemented (in-progress / pending)
 
 - **Static `href` attributes on plain nodes** are not localized at render (link nodes and
   embed HTML are); needs an emit-side wrapper.
-- **Region tracking / escape hatches — partial.** `verbatim` regions are populated:
+- **Region tracking / escape hatches — mostly done.** `verbatim` regions are populated:
   arbitrary JS in a `{ … }` value/attribute/condition that the template engine can't
   evaluate (function/method calls, etc.) is preserved as a `{ _code, expr }` marker, round-
-  trips, renders natively at build, and is reported as a `kind: 'verbatim'` region. Still
-  pending: `rawClass` (a raw Tailwind `class="…"`) and `editable`-span tracking, plus
-  arbitrary frontmatter passthrough — those non-dialect spans do not yet round-trip.
+  trips, renders natively at build, and is reported as a `kind: 'verbatim'` region.
+  Hand-authored frontmatter is captured as a verbatim `_frontmatter` passthrough block and
+  round-trips (the whole-component escape hatch is the `custom` node, dialect §4.9; a fully
+  non-dialect page opens read-only). Still pending: `rawClass` (a raw Tailwind `class="…"`)
+  and `editable`-span tracking — those non-dialect spans do not yet round-trip.
 
 ### Known semantic gaps in current output
 

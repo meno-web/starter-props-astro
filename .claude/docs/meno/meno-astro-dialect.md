@@ -243,18 +243,21 @@ options / `string` fallback). The `children` prop is skipped in the destructure.
 ## 4. Node-type → markup mapping
 
 This is the grammar. The walker is `packages/astro/lib/dialect/emit/emitNode.ts`; its
-inverse is `packages/astro/lib/dialect/parse/parseBody.ts`. There are seven Meno node
+inverse is `packages/astro/lib/dialect/parse/parseBody.ts`. There are ten Meno node
 types plus a fallback.
 
 | `type` | Emitted markup | Notes |
 |---|---|---|
-| `node` | `<tag …>children</tag>` | Standard HTML element. Void tags self-close. |
+| `node` | `<tag …>children</tag>` | Standard HTML element. Void tags self-close. An `<img data-meno-optimize="true">` emits `<MenoImage>` (§4.1). |
 | `component` | `<Name prop=… />` | Capitalized tag; props as JSX attributes. |
 | `slot` | `<slot>fallback</slot>` or `<slot />` | `default` children become slot fallback. |
 | `link` | `<Link href=…>children</Link>` | Runtime `Link` component. |
 | `embed` | `<Embed html={…} />` | Raw HTML/SVG passthrough. |
 | `list` | `{ list(src,{…}).map((item, itemIndex) => ( … )) }` (prop) or a frontmatter `getCollectionList` const + `{ X.map(…) }` (collection) | See §5. |
 | `locale-list` | `<LocaleList … />` | Locale switcher. |
+| `island` | `<Counter client:visible … />` + a `../islands/<src>` import | BYO framework component (Astro island). See §4.7. |
+| `markdown` | `<Markdown source={…} />` | Verbatim Markdown → HTML at build. See §4.8. |
+| `custom` | `<Fancy … >children</Fancy>` + a `../custom/<src>` import | Opaque foreign `.astro` (server-only black box). See §4.9. |
 | *unknown* | `{/* meno:unknown "type" */}` | Nothing is silently dropped. |
 
 ### 4.1 `node` — HTML element + styles
@@ -288,6 +291,16 @@ newlines use the bare form (`src="/x.jpg"`); strings with `{{…}}` templates be
 ```astro
 <img class={style({ base: { objectFit: "cover" }, tablet: { height: "380px" }, mobile: {} })} src="/images/img.jpg" alt="" />
 ```
+
+**Optimized images.** An `<img>` node carrying `data-meno-optimize="true"` emits the runtime
+`<MenoImage>` wrapper instead of `<img>` — `MenoImage` renders Astro's `astro:assets` `<Image>`
+(build-time optimization, responsive output). The model stays a plain `img` node; the marker
+attribute is the discriminator and is **consumed on emit, re-added on parse**, so it never appears
+as a literal attribute and non-optimized images keep emitting as bare `<img>`. Every other attribute
+(`src`, `alt`, `width`, `height`, a templated `src`) and `class`/inline-style flow through the same
+machinery as a normal node. A **remote** `src` is only actually processed when its host is allow-listed
+in `project.config.json` `image.domains` (mapped to Astro's `image.domains` by the integration);
+otherwise it passes through unoptimized. (`emitNode.ts` `renderMenoImage`, `OPTIMIZE_ATTR`.)
 
 #### The `style()` second argument (`meta`)
 
@@ -471,6 +484,200 @@ round-trip fixtures):
 ```astro
 <LocaleList displayType="nativeName" showFlag={true} style={style({ base: { display: "flex" } })} itemStyle={style({ padding: "4px" })} />
 ```
+
+### 4.7 `island` — BYO framework component (Astro Islands)
+
+An `island` node is a **bring-your-own framework component** (React/Preact/Vue/Svelte)
+placed as a real [Astro island](https://docs.astro.build/en/concepts/islands/). The user
+authors the component file under `src/islands/`; the dialect emits a standard Astro
+instance with a `client:*` hydration directive and a default import:
+
+```astro
+---
+import Counter from '../islands/Counter.tsx';
+---
+<Counter client:visible initial={3} />
+```
+
+The model node:
+
+```jsonc
+{ "type": "island", "src": "Counter.tsx", "client": { "directive": "visible" }, "props": { "initial": 3 } }
+```
+
+- **`src`** — the file relative to `src/islands/` (e.g. `Counter.tsx`, `widgets/Chart.vue`).
+  It is the single source of truth: its **extension derives the framework**
+  (`.tsx`/`.jsx` → React, `.vue` → Vue, `.svelte` → Svelte), which drives the
+  `@astrojs/<fw>` integration that gets provisioned. The emitted JSX tag is the
+  capitalized basename, uniquified against component tags (the import path carries `src`,
+  so the parser recovers it regardless of the identifier). Imports resolve to
+  `<…>/islands/<src>` at the page/component's own `../` depth.
+- **`client`** — `{ directive, value? }`, the single Astro `client:*` directive.
+  `load`/`idle`/`visible` are bare; `media` carries a query
+  (`client:media="(max-width: 50em)"`); `only` carries the framework
+  (`client:only="react"`). **Omit `client` entirely** for a server-rendered island
+  (valid Astro, zero JS).
+- **`props`** — emitted as JSX attributes exactly like `node` attributes (`{{…}}`
+  templates become expressions). Unlike a Meno `component`, an island gets **no**
+  `style()` class, no instance-style merge and no `cms`/loop/ambient prop forwarding —
+  it's a framework file, so only its explicit props are passed (a `class` prop can be
+  passed explicitly as a string).
+- **`children`** — slotted content, rendered server-side into the island's `<slot/>`.
+- **`if`** — conditional, same `{cond && ( … )}` wrapper as every other node.
+
+On **parse**, a tag whose frontmatter import resolves to a framework-extension file under
+`islands/` becomes a `type:"island"` node; `client:*` attributes split off into `client`,
+the rest become `props`. The whole thing round-trips exactly.
+
+**Editor prop controls.** An island carries no Meno prop schema, so the PropsPanel discovers its
+props by reading the source file (`POST /api/component-props` parses the `interface Props` /
+`defineProps<{…}>` / `$props()` / `export let` declarations) and renders one input per prop. The
+declared **type picks the control**: a **string-literal union** (`size?: 'sm' | 'md' | 'lg'`)
+renders as a **dropdown** of those literals, `boolean`→toggle, `number`→number, everything else→a
+text input. To give an editor a fixed set of choices, type the prop as a union of string literals.
+A union with any non-literal member (`'a' | string`, `'a' | 1`) stays free-text; a `{{binding}}` or
+other off-list value falls back to the text input so it is never stranded. (Same behavior for a
+`custom` node — §4.9.)
+
+**Runtime / provisioning (not codec).** `meno()` **auto-registers** the matching
+`@astrojs/<fw>` renderer for every island framework whose `@astrojs/<fw>` package is
+**installed and resolvable from `meno-astro`**, returning them as top-level integrations
+alongside `meno()` — so **no `astro.config` edit is ever needed**. *Which* frameworks are
+installed is decided by **provisioning**, not by `meno()`: the **studio/play runtime**
+scans `src/islands/`, derives the frameworks in use (`MENO_ASTRO_FRAMEWORKS`), and installs
+only those `@astrojs/<fw>` packages into its shared store (a converted project lists them
+in its own `package.json` for standalone builds). React and Preact share `.jsx`/`.tsx`, so
+Preact is selected via the `MENO_ISLAND_FRAMEWORKS` override rather than detected by
+extension. **Adding the first island of a framework to a running play server auto-provisions
+its renderer and restarts the preview** (the studio watches `src/islands/` and re-points
+`MENO_ASTRO_FRAMEWORKS`), so it hydrates without a manual restart — otherwise the first
+`.tsx`/`.vue`/`.svelte` would `NoMatchingRenderer` until the user restarted by hand.
+
+> ⚠ **Never import a renderer — or any other package — in `astro.config`.** Do **not** add
+> `import react from '@astrojs/react'` / `react()` (nor `@astrojs/vue`, an adapter, etc.),
+> not even via a dynamic `import()` / `require()`. The Meno preview **statically scans
+> `astro.config` for every import form** (static `import`, `export … from`, dynamic
+> `import()`, `require()`, side-effect `import`) and allows **only** `astro/config`,
+> `meno-astro`, and `meno-astro/integration`. Any other specifier disables the preview —
+> *"This project has a custom astro.config that imports …, which the shared Astro preview
+> runtime doesn't include"* — so the project won't open in the editor. The renderer is
+> auto-registered (above), so importing it is both **redundant and breaking**. Keep the
+> config exactly `integrations: [meno()]`. (A bare CLI `astro build` outside the studio
+> still works only when the matching `@astrojs/<fw>` is in the project's own `package.json`
+> so `meno()` can resolve it — but never satisfy that by importing it in `astro.config`.)
+
+Island hydration **works in the play dev server** (open the preview in a browser /
+"Open in browser") and in a real deployed `astro build`. The integration adds the play
+runtime's **hoisted** framework `node_modules` to `vite.server.fs.allow`, so the client
+hydration chunk (`@astrojs/<fw>/dist/client.js`, fetched over `/@fs/…`) is served instead
+of 403ing — that 403, not the play CSP, is what previously kept islands inert in the
+preview. The embedded in-app preview is exempt from the Electron play CSP (via the
+`x-meno-astro-play` marker), so it should hydrate too; if an island is still inert *only*
+inside the embedded preview, that's a separate CSP limitation to track — see the play-CSP note.
+
+> **meno-core canvas:** meno-core can't run a framework component, so the design canvas
+> renders a labelled placeholder for an island (`⛶ Island: Counter (client:visible)`).
+> Real hydration is play/build only.
+
+### 4.8 `markdown` — verbatim Markdown block
+
+A `markdown` node renders a block of **verbatim, whitespace-significant Markdown** to HTML
+at build/SSR. It emits the runtime `<Markdown source={…} />` component (which renders
+`set:html={renderMarkdown(source)}`):
+
+```astro
+<Markdown source={`# Title
+
+Some **bold** copy with a [link](/about).`} />
+```
+
+The model node:
+
+```jsonc
+{ "type": "markdown", "source": "# Title\n\nSome **bold** copy with a [link](/about)." }
+```
+
+- **`source`** — the raw Markdown string. It is **never template-resolved** (like an `embed`
+  payload): a literal `{{x}}` or `${x}` in the source survives verbatim. It therefore always
+  emits as a backtick string literal (`escapeBacktick`); a **multi-line** source is hoisted to a
+  never-reindented frontmatter `const __mdN = \`…\`` (the same mechanism as `__embedN`) and
+  referenced as `source={__mdN}`, while a single-line source inlines as ``source={`…`}``.
+- **class / inline style / passthrough attributes** mirror `embed`, so a styled markdown block
+  round-trips.
+- Rendered through the runtime `renderMarkdown(source)` (`meno-astro`, backed by markdown-it),
+  which mirrors meno-core's shared markdown config so the editor canvas and the real Astro build
+  agree. (`emitNode.ts` `renderMarkdown` node renderer; node schema `MarkdownNodeType.ts`.)
+
+### 4.9 `custom` — opaque foreign `.astro` (server-only black box)
+
+A `custom` node is a **hand-authored `.astro` component that Meno treats as a black box**. The
+user authors a full-power `.astro` file under `src/custom/` (any frontmatter, `import`s,
+`getCollection`, helper functions, arbitrary markup); the dialect emits a standard Astro instance
+plus a default import, but **Meno never models its internals** — you can place it, pass props, and
+slot children, but not edit what's inside. It is the **native-Astro sibling of an island** (§4.7):
+same "bring-your-own file" shape, but server-rendered with **no framework renderer and no
+hydration**.
+
+```astro
+---
+import Fancy from '../custom/Fancy.astro';
+---
+<Fancy label="Hello" count={7}>
+  <span>slotted child</span>
+</Fancy>
+```
+
+The model node:
+
+```jsonc
+{ "type": "custom", "src": "Fancy.astro",
+  "props": { "label": "Hello", "count": 7 },
+  "children": [{ "type": "node", "tag": "span", "children": "slotted child" }] }
+```
+
+- **`src`** — the file relative to `src/custom/` (e.g. `Fancy.astro`, `widgets/Banner.astro`).
+  The emitted JSX tag is the capitalized basename, uniquified against component/island tags (the
+  import path carries `src`, so the parser recovers it regardless of the identifier). The import
+  resolves to `<…>/custom/<src>` at the page/component's own `../` depth (`customAstroImportPath`).
+- **`props`** — emitted as JSX attributes exactly like `node` attributes (`{{…}}` templates become
+  expressions). Like an island and **unlike** a Meno `component`, a custom node gets **no**
+  `style()` class, no instance-style merge, and **no `cms`/loop/ambient prop forwarding** — Meno
+  can't introspect a foreign file's prop needs, so **only the props the user explicitly sets are
+  passed** (`label`, `count` above). Anything the foreign file needs from CMS/loop context must be
+  passed in by hand as an explicit prop.
+- **`children`** — slotted content, rendered server-side into the component's default `<slot/>`.
+- **`if`** — conditional, same `{cond && ( … )}` wrapper as every other node.
+- **No `client:*`.** A `.astro` component is server-only by nature; a custom node carries no
+  hydration directive and ships zero client JS. (For client-side framework interactivity, use an
+  **island** instead — §4.7.)
+
+On **parse**, a tag whose frontmatter import resolves to a file under `src/custom/` becomes a
+`type:"custom"` node; its attributes become `props` and its children are captured. The whole thing
+round-trips exactly.
+
+**Editor prop controls.** Like an island (§4.7), a custom node carries no Meno prop schema, so the
+PropsPanel discovers its props by reading the `.astro` source — its frontmatter `interface Props` or
+`const { … } = Astro.props` destructure — and renders one input per prop. The declared **type picks
+the control**: a **string-literal union** (`variant?: 'info' | 'warn' | 'success'`) renders as a
+**dropdown** of those literals, `boolean`→toggle, `number`→number, everything else→a text input. So
+to give an editor a fixed set of choices for a custom prop, type it as a union of string literals. A
+union with any non-literal member (`'a' | string`) stays free-text; a `{{binding}}` or other
+off-list value falls back to the text input so it is never stranded.
+
+**Runtime/provisioning:** none — a custom component is a plain native Astro
+import, so `astro build`/`dev` render it with no extra dependency (no `@astrojs/<fw>` renderer, no
+provisioning step), and the codec change ships in the app with no `meno-astro` publish. A real
+`astro build` is exercised end-to-end by `packages/astro/scripts/custom-e2e.mjs`.
+
+> **meno-core canvas:** meno-core can't execute a foreign `.astro` file, so the design canvas
+> renders a quiet placeholder for a custom node (its slotted children, or an inline marker with the
+> file's basename). Real rendering is play/build only.
+
+> **custom vs island.** Both reference a BYO foreign file and pass only explicit props. The
+> difference is the **runtime**: `custom` = a server-only native `.astro` under `src/custom/` (no
+> `client:*`, no renderer); `island` = a *client-hydrated* framework component under `src/islands/`
+> (carries a `client:*` directive, auto-provisions an `@astrojs/<fw>` renderer — §4.7). Pick by the
+> question "does this need to run in the browser?": yes → island; no → custom.
 
 ---
 
@@ -918,10 +1125,33 @@ If you are writing or editing meno-astro dialect by hand (or as an AI), the rule
    (the destructured names + their inferred TS types are regenerated on save).
 6. **Conditionals are `{cond && ( … )}`**; lists are `{ list(src,{…}).map((item, i) => ( … )) }`
    (prop) or a frontmatter `getCollectionList` const + `{ X.map(…) }` (collection).
-7. **Verbatim JS *expressions* survive; foreign `class`/frontmatter do not (yet).** An
+7. **Verbatim JS *expressions* and foreign frontmatter survive; raw `class` does not.** An
    un-evaluatable `{expr}` value/attribute/condition is preserved as `{ _code, expr }` and
-   reported as a `verbatim` region. But a raw `class="px-4 flex"` (use `style({...})`) and
-   arbitrary frontmatter logic still do not round-trip — don't hand-author those.
+   reported as a `verbatim` region. Hand-authored frontmatter (a stray `const`, a foreign
+   `import`, a helper `function`) is captured as a verbatim `_frontmatter` passthrough block and
+   round-trips (§4.9 covers the whole-component escape hatch; page-level passthrough keeps a
+   mostly-dialect page editable). The one thing that still does **not** round-trip is a raw
+   `class="px-4 flex"` on a dialect node — always use `style({...})`.
+8. **Islands, custom components, markdown, optimized images:**
+   - **Islands** are framework components under `src/islands/` ([§4.7](#47-island--byo-framework-component-astro-islands)):
+     `<Counter client:visible … />` with a `../islands/Counter.tsx` import → a `type:"island"`
+     node. Put the `client:*` directive on the tag (bare for `load`/`idle`/`visible`, valued
+     for `media`/`only`; omit for a server-only island). Drop the file in `src/islands/` (and
+     its deps in `package.json`) and `meno()` auto-wires the renderer — **never** add
+     `react()`/`vue()` (or any non-`meno-astro` import) to `astro.config`, or the Meno preview
+     refuses to open the project ([§4.7](#47-island--byo-framework-component-astro-islands)).
+   - **Custom components** ([§4.9](#49-custom--opaque-foreign-astro-server-only-black-box)): an
+     opaque foreign `.astro` under `src/custom/` → `<Fancy … >children</Fancy>` with a
+     `../custom/Fancy.astro` import → a `type:"custom"` node. Meno passes **only explicit props**
+     and slots children; it never models the internals (server-rendered black box, **no
+     `client:*`**, no renderer/provisioning). The server-only sibling of an island — use it for
+     markup the dialect can't express that needs no browser framework.
+   - **Markdown** ([§4.8](#48-markdown--verbatim-markdown-block)): `<Markdown source={\`…\`} />`,
+     verbatim source (multi-line hoists to `const __mdN`). Never put `{{templates}}` inside — the
+     source is not template-resolved.
+   - **Optimized images** ([§4.1](#41-node--html-element--styles)): a plain
+     `<img data-meno-optimize="true" …>` emits `<MenoImage>` (astro:assets). A remote `src` needs
+     its host in `project.config.json` `image.domains`.
 
 For a deeper, copy-pasteable rule set, use the `/meno-astro` skill
 (`.claude/commands/meno-astro.md`).

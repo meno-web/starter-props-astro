@@ -72,7 +72,7 @@ You have been asked to visually compare the live website against the local Studi
    📷 Studio:  rendered-websites/<host>/verify/<slug>-studio.png
    ```
 
-8. **Do NOT auto-fix drift.** Queue any drift as a follow-up the user can address by re-running `/split-page`, `/extract-components`, `/add-interactivity`, or by hand-editing the section component. This skill is read-only against the project.
+8. **Do NOT auto-fix drift.** Queue any drift as a follow-up the user can address by re-running `/add-interactivity` or by hand-editing the section component. This skill is read-only against the project.
 
 ## Edge cases
 

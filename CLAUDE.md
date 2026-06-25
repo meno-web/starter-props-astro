@@ -1,4 +1,4 @@
-<!-- MENO_DOCS_VERSION: 0.1.4 -->
+<!-- MENO_DOCS_VERSION: 0.1.7 -->
 # Meno — Visual CMS for Astro
 
 This is an **Astro project** — standard `src/pages` and `src/components` `.astro` files plus Astro
@@ -102,15 +102,100 @@ images/  fonts/  icons/    — assets, referenced with absolute paths (/images/h
    - `<LocaleList … />` (locale switcher; style sub-props wrapped in `style(...)`, editor meta in a
      single `meta={{...}}`).
    - Dynamic tag (`h{{size}}`) → frontmatter `const Tag_0 = \`h${size}\`` + `<Tag_0>…</Tag_0>`.
+   - **Optimized image** — a plain `<img data-meno-optimize="true" src=… alt=… width=… height=… />`
+     emits the runtime `<MenoImage>` wrapper (Astro `astro:assets` `<Image>`). It stays a normal
+     `img` node — the marker attr is the only difference. A **remote** `src` is only actually
+     optimized if its host is allow-listed in `project.config.json` `image.domains` (below).
+   - **Markdown** — `<Markdown source={\`# Title\n\nbody\`} />` (multi-line hoists to a frontmatter
+     `const __mdN = \`…\``). The `source` is **verbatim and NEVER template-resolved** — a literal
+     `{{x}}` or `${x}` stays literal, so don't use `{{templates}}` inside it.
+   - **Island** (BYO framework) — `<Counter client:visible … />` with an
+     `import Counter from '../islands/Counter.tsx'`. Drop the React/Preact/Vue/Svelte file in
+     `src/islands/` (and its deps in `package.json`); `meno()` auto-wires the renderer —
+     **never import a renderer (`@astrojs/react`/`react()`) or any non-`meno-astro` package in
+     `astro.config`, or the Meno preview won't open the project** (it allow-lists only
+     `astro/config` + `meno-astro`). Put the `client:*` directive on the tag (bare for
+     `load`/`idle`/`visible`, valued for `media`/`only`; omit for a server-only, zero-JS island).
+   - **Custom component** (opaque foreign `.astro`) — `<Fancy label="Hi">…</Fancy>` with an
+     `import Fancy from '../custom/Fancy.astro'`. Author the full-power `.astro` file under
+     `src/custom/` (any frontmatter, imports, helpers); Meno never models its internals — it's a
+     **server-rendered black box**. Pass **explicit props only** (JSX attributes) + optional
+     slotted children; an island's `client:*` does **not** apply (a custom component is
+     server-only, zero JS). Reach for it only when a piece of UI can't be expressed in dialect and
+     needs no client framework — see the escalation ladder below.
+     - **Editor prop controls (islands + custom).** Meno can't model a foreign file's internals, so
+       the PropsPanel discovers its props by reading the source — an island's `interface Props` /
+       `defineProps` / `$props()` / `export let`, or a custom `.astro`'s frontmatter `interface
+       Props` / `const { … } = Astro.props` — and renders one input per prop. The declared **type
+       picks the control**: a **string-literal union** (`variant?: 'info' | 'warn' | 'success'`)
+       becomes a **dropdown** of those values, `boolean`→toggle, `number`→number input, everything
+       else→text box. So to give the editor a fixed set of choices for an island/custom prop, **type
+       it as a union of string literals**. (A union with any non-literal member — `'a' | string`,
+       `'sm' | 1` — stays free-text; and a `{{binding}}` or other off-list value falls back to the
+       text input so it's never stranded.)
 
-9. **Don't rely on escape hatches yet.** Non-dialect / hand-written spans (raw Tailwind, ad-hoc Astro
-   logic) are **not** preserved across a round-trip today. Stay inside the grammar; if you can't express
-   something in dialect, flag it rather than writing it.
+9. **When the dialect can't express it, escalate — don't give up.** Prefer the dialect, but Meno
+   has two real escape hatches for things that genuinely can't be modeled (see the escalation
+   ladder below): a **custom component** (`type:"custom"` — an opaque `.astro` under `src/custom/`,
+   server-rendered, round-trips) and, for a whole bespoke route, a **hand-authored page** in
+   `src/pages/`. The one thing still **not** preserved across a round-trip is a raw `class="…"`
+   (static Tailwind/CSS) on a dialect node — always use `style({...})` for classes.
 
 10. **Serialization is deterministic.** All literals (style / props / meta / i18n / list config) are
     printed with stable key order, JSON string escaping, and 80-col wrapping. Don't hand-tune
     formatting — a save re-emits canonically. Empties drop on normalization (empty `style`, empty
     `children`, empty `meta` / `interface`, and a lone array child collapses to a bare string).
+
+---
+
+## When Meno can't express it — the escalation ladder
+
+Always reach for the **lowest** rung that works, and escalate only when the rung above genuinely
+can't express what's needed. Never start at a custom file for something the dialect already models
+— that throws away visual editing for nothing.
+
+**1. Native Meno (the dialect) — the default.** Express the UI with dialect nodes (`node`,
+`component`, `link`, `embed`, `list`, `slot`, `markdown`, …), `style({...})`, `i18n({...})`, and
+`{{bindings}}`; factor anything repeated into a reusable `.astro` under `src/components/`. Fully
+visual, the editor is the source of truth, lossless round-trip. **Stay here unless you hit a hard
+wall.**
+
+**2. Custom component** — `type:"custom"`, an opaque foreign `.astro` under `src/custom/`. Use when
+a *piece of a page* can't be expressed in the dialect: a third-party Astro component, arbitrary
+server-side `.astro`/JS markup, a complex widget. Author the file with full Astro power (any
+frontmatter, `import`s, `getCollection`, helper functions) and reference it as a `custom` node:
+
+```astro
+---
+import PriceTable from '../custom/PriceTable.astro';
+---
+<PriceTable plan="pro" seats={5}>
+  <p>This child renders server-side into the component's default slot.</p>
+</PriceTable>
+```
+
+Meno **places** it, passes the **explicit props** you set (as JSX attributes), and slots children —
+but treats its internals as a **black box** (the editor canvas shows a placeholder; it round-trips
+intact). No `style()`, no instance-style merge, no cms/loop/ambient prop forwarding — only the props
+you write are passed. **Server-rendered, zero client JS.**
+
+> **Custom vs island — don't confuse them.** A **custom** component is a *server-only* native
+> `.astro` file (`src/custom/`, no `client:*`). An **island** (rule 8) is a *client-hydrated
+> framework* component (React/Preact/Vue/Svelte under `src/islands/`, carrying a `client:*`
+> directive). Need browser interactivity from a framework → island. Need server-rendered markup the
+> dialect can't model → custom.
+
+**3. Entire custom page** — hand-author a complete `.astro` route in `src/pages/`. Use when even the
+page *shell* can't be Meno: bespoke frontmatter logic, a user `getStaticPaths`/dynamic route, an
+endpoint, a fully custom layout. Two outcomes, both of which build + deploy as normal Astro:
+
+- **Dialect body + extra foreign frontmatter** (a stray `const`, a foreign `import`, a helper
+  `function`) → the foreign frontmatter is captured as a verbatim `_frontmatter` passthrough block.
+  The page **stays visually editable and round-trips** — you get dialect editing *plus* your
+  hand-written setup code.
+- **Fully non-dialect page** → Meno opens it **read-only**: it still lists and previews in the
+  editor, but visual edits are disabled and a save is a no-op (a clobber-guard, so the editor never
+  overwrites your hand-authored file). Keep editing it by hand.
 
 ---
 
@@ -125,7 +210,9 @@ import Heading from '../components/Heading.astro';
 
 const meta = {
   title: "About",
-  description: "About this site"
+  description: "About this site",
+  viewTransitions: true,                              // optional — see "Head, SEO & project config"
+  sitemap: { priority: 0.8, changefreq: "weekly" }    // optional
 };
 ---
 <BaseLayout meta={meta}>
@@ -134,6 +221,9 @@ const meta = {
   </main>
 </BaseLayout>
 ```
+
+> `meta` is a **plain `const meta = {…}`** — never `export const meta`, never `satisfies MenoPageMeta`,
+> never `import type`. Those break the real `astro build`. New SEO fields just ride this same object.
 
 **Component** (`src/components/<Name>.astro`):
 ```astro
@@ -182,6 +272,49 @@ item files in `src/content/<collection>/` consistent with it.
 
 ---
 
+## Head, SEO & project config
+
+These are real, shipped Astro features the `BaseLayout` and `meno()` integration wire up. Two homes:
+**page `meta`** (per-page, in the page's plain `const meta`) and **`project.config.json`** (project-wide).
+
+### Page `meta` fields (per page)
+
+| Field | Shape | Effect |
+|---|---|---|
+| `viewTransitions` | `true` | Renders Astro's `<ClientRouter>` → SPA-style view-transition navigation. **Off by default.** |
+| `noindex` | `true` | Emits `<meta name="robots" content="noindex">`. |
+| `sitemap` | `{ priority?: 0..1, changefreq?: "always"\|"hourly"\|"daily"\|"weekly"\|"monthly"\|"yearly"\|"never", exclude?: true }` | Per-page `sitemap.xml` annotation. `exclude: true` drops the page (and every locale variant) from the sitemap. Invalid values are silently ignored. |
+| `customCode` | `{ head?, bodyStart?, bodyEnd? }` | Raw HTML injected into `<head>` / right after `<body>` / before `</body>`. Merged **after** the project-wide `customCode`. |
+
+```astro
+const meta = {
+  title: "Pricing",
+  viewTransitions: true,
+  noindex: true,
+  sitemap: { priority: 1.0, changefreq: "daily" },
+  customCode: { head: '<meta property="og:type" content="website" />' }
+};
+```
+
+### `project.config.json` fields (project-wide)
+
+| Key | Shape | Effect / gotcha |
+|---|---|---|
+| `customCode` | `{ head?, bodyStart?, bodyEnd? }` | Project-wide raw-HTML injection (merged **before** each page's `meta.customCode`). |
+| `icons` | `{ favicon?, faviconDark?, appleTouchIcon? }` | Favicon `<link>`s. With both `favicon` + `faviconDark`, BaseLayout scopes them by `prefers-color-scheme`. Use absolute hrefs (`/icons/favicon.svg`). |
+| `redirects` | `[{ from, to, status? }]` | Astro `redirects`. A `301` is the bare form; any other `status` uses Astro's object form. |
+| `image` | `{ domains: string[] }` | Allow-list of remote hosts the optimizing `<MenoImage>` may process. **A remote `data-meno-optimize` image silently passes through (no optimization) unless its host is listed here.** |
+| `prefetch` | `{ enabled: true, defaultStrategy: "hover"\|"tap"\|"viewport"\|"load" }` | Astro native link prefetch. Only applied when `enabled === true`. **Suppressed in the play/preview by design** (it would flood the single dev server) — it takes effect in real builds. |
+| `devToolbar` | `true` | Shows Astro's dev toolbar in the play preview. **Off by default.** |
+| `output` | `"server"` | Opts the project into **SSR** (on-demand rendering). Default is static. Pair it with `adapter`. |
+| `adapter` | `{ name: "node"\|"cloudflare"\|"netlify"\|"vercel", mode?: "standalone"\|"middleware" }` | The SSR adapter (only with `output: "server"`). `meno()` registers `@astrojs/<name>` for you. **This is the ONLY way to add an adapter — NEVER `import '@astrojs/node'` (or any adapter) in `astro.config.mjs`; the preview allow-lists only `astro/config` + `meno-astro`, so a config adapter-import fails with _"...imports \"@astrojs/node\", which the shared Astro preview runtime doesn't include."_** |
+
+> Changing a `project.config.json` field above (or i18n locales) is **frozen at the dev server's
+> `config:setup`**, so the Meno play server auto-restarts to apply it; per-render fields (SEO, custom
+> code, favicons) apply live. If a change doesn't show, use the editor's **Restart server** menu action.
+
+---
+
 ## Selection
 
 Read `.meno/selection.json` for the element currently selected in the editor. It's a **bare JSON array**
@@ -198,20 +331,21 @@ selected.
 
 ## Status & caveats (important)
 
-This format is **new and still being completed**. Be honest about what works today:
+This format is **new but functional end to end**. Be honest about what works today:
 
 - ✅ **Editing & round-trip work.** Pages/components read, save, and round-trip through `meno-astro`'s
   `emit`/`parse`. Visual edits and hand-edits stay in sync as long as you stay in the grammar.
-- ⚠ **`astro build` is not wired yet.** The runtime helpers the emitted markup imports (`style()`,
-  `href()`, `when()`, `getCollectionList()`, `embedHtml()`) and the `meno-astro/components`
-  components (`BaseLayout`, `Link`, `Embed`, `LocaleList`) are **not yet implemented**, so the emitted
-  `.astro` is correct Meno format but **not yet runnable** by `astro build`. Preview through the Meno
-  editor, not `astro dev` / `npm run build`. (`i18n()` and `list()` are the exception — they're
-  implemented; the `i18n()` resolver works, but per-locale rendering still awaits the `BaseLayout`
-  wiring that calls `runWithLocale` per route.)
-- ⚠ **Escape hatches (`rawClass` / `verbatim` regions) are not implemented yet** — only Meno-format
-  content survives a round-trip. Don't hand-author raw `class="…"` or arbitrary Astro logic expecting it
-  to persist.
+- ✅ **`astro build` works.** The runtime helpers the emitted markup imports (`style()`, `i18n()`,
+  `href()`, `when()`, `list()`, `getCollectionList()`, `embedHtml()`, `richTextWithComponents()`,
+  `renderMarkdown()`) and the `meno-astro/components` (`BaseLayout`, `Link`, `Embed`, `LocaleList`,
+  `MenoImage`, `Markdown`) are **implemented and published** (`meno-astro` on npm). Emitted `.astro`
+  runs under `astro dev`/`astro build` with the `meno()` integration (the converter scaffolds the
+  config). i18n (locale routing, `meta.slugs`, hreflang), CMS content collections, client filtering,
+  Astro islands, and the head/SEO/config features above are all wired and build-verified.
+- ✅ **Verbatim JS *expressions* survive.** A `{expr}` the template engine can't evaluate (a
+  function/method call) is preserved as `{ _code, expr }`, round-trips, and builds.
+- ⚠ **Raw `class="…"` and arbitrary frontmatter do not round-trip yet.** Use `style({...})` for classes;
+  don't hand-author ad-hoc Astro frontmatter logic expecting it to persist.
 
 For the full grammar and the implemented/pending split, see:
 - `.claude/docs/meno/meno-astro-dialect.md` — the dialect spec (grammar, normalization, round-trip contract).

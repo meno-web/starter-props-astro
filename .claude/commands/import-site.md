@@ -48,10 +48,8 @@ If the user wants control over the import, point them at the individual skills t
 | 2. Refresh design tokens only (no pages, no components) | **`/import-design-tokens <url>`** — writes `variables.json` + `colors.json` |
 | 3. CMS template families (independent — runs without a library) | **`/import-cms <url> [--group=<pattern>]`** |
 | 4. Specific unique pages (assumes library exists) | **`/import-pages <url1> <url2> …`** |
-| 5. Carve a saved page into Layout + section components | **`/split-page <slug>`** |
-| 6. Mine repeating primitives/blocks out of sections | **`/extract-components <slug>`** |
-| 7. Attach JS behaviour (mobile menu, tabs, accordion, …) | **`/add-interactivity <slug>`** |
-| 8. Visually verify a page against the live site | **`/verify-import [slug]`** |
+| 5. Attach JS behaviour (mobile menu, tabs, accordion, …) | **`/add-interactivity <slug>`** |
+| 6. Visually verify a page against the live site | **`/verify-import [slug]`** |
 
 A typical step-by-step run looks like:
 
@@ -60,8 +58,6 @@ A typical step-by-step run looks like:
 /import-design-tokens   https://acme.com
 /import-cms             https://acme.com --group=/blog/*
 /import-pages           https://acme.com/about https://acme.com/pricing
-/split-page             about
-/extract-components     about
 /add-interactivity      about
 /verify-import          about
 ```

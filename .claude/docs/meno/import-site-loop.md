@@ -2,6 +2,8 @@
 
 This is the runbook the `site-importer` agent (and `/import-site` slash command) loads when converting a live website into a Meno project. It assumes Meno's existing conversion services do the heavy lifting — your job is to **orchestrate** them, not reimplement them.
 
+> **Format note.** This is an astro project — pages live as `src/pages/<slug>.astro` and components as `src/components/<Name>.astro` on disk. This playbook drives the **format-transparent Studio API** (`POST /api/save-page`, `/api/save-component`, …), which addresses pages/components by their **logical id** — `pages/<slug>.json`, `components/<Name>.json`. Those `.json` path arguments are the API contract, NOT on-disk filenames: the astro provider writes the real `.astro` files for you. The `rendered-websites/<host>/…json` files below are import scratch space (also not project files). `variables.json` / `colors.json` are real project files (they exist in astro projects too).
+
 > **Two non-negotiable rules:**
 >
 > 1. **Homepage is sacred.** Build a working homepage + complete component library *first*. Every other page reuses that library. Any halt after STEP 2 still leaves the user a usable result.
@@ -216,8 +218,6 @@ Several phases of this playbook are also available as standalone slash commands 
 - **`/import-design-tokens <url>`** — STEP 2f-i + 2f-ii only. Extracts typography + colors from the live page, merges into `variables.json` + `colors.json`. Preserves hand-added keys.
 - **`/import-cms <url>`** — STEP 3 only. Detects template groups itself, then fans out one sub-agent per group. If Layout doesn't exist yet, sub-agents use a passthrough root and flag a follow-up.
 - **`/import-pages <url1> <url2>`** — STEP 4 only. Assumes the library exists but tolerates a missing one (warns, proceeds with passthrough roots).
-- **`/split-page <slug>`** — section-componentization of an already-saved page.
-- **`/extract-components <slug>`** — primitives/blocks mining inside a saved page's sections.
 - **`/add-interactivity <slug>`** — adds JS behaviour to a saved page's section components.
 - **`/verify-import [slug]`** — STEP 5 only. Side-by-side screenshot of live vs Studio render.
 
@@ -685,29 +685,33 @@ Status: <setup|homepage-extract|homepage-shell-saved|homepage-done|cms-pass|page
 
 ## Where things live on disk
 
+The Studio API addresses pages/components by logical id (`pages/<slug>.json`,
+`components/<Name>.json`); the astro provider writes the real `.astro` files under `src/`:
+
 ```
 <project-root>/
-├── pages/<slug>.json              ← thin shell wrapping Layout (final state)
-├── components/
-│   ├── Layout.json                ← single slot, Header+Footer baked in
-│   ├── Header.json                ← no props
-│   ├── Footer.json                ← no props
-│   ├── Button.json                ← (if site has primitive system)
-│   ├── SpeakerCard.json           ← (if /speaker/* is a CMS template)
-│   ├── HomeHero.json              ← per-page section, zero props
-│   ├── HomeFeatures.json
-│   ├── AboutHero.json
-│   └── …
-├── templates/<collection>.json    ← one per CMS collection
-├── cms/<collection>/<item>.json   ← one per CMS item
-├── variables.json                 ← typography + layout tokens
-├── colors.json                    ← brand colors
-├── images/ / fonts/               ← uploaded assets
-└── rendered-websites/<host>/      ← scratch space; not user-visible
+├── src/
+│   ├── pages/<slug>.astro              ← thin shell wrapping Layout (final state)
+│   │   └── <collection>/[slug].astro   ← CMS template page (schema in meta.cms)
+│   └── components/
+│       ├── Layout.astro                ← single slot, Header+Footer baked in
+│       ├── Header.astro                ← no props
+│       ├── Footer.astro                ← no props
+│       ├── Button.astro                ← (if site has primitive system)
+│       ├── SpeakerCard.astro           ← (if /speaker/* is a CMS template)
+│       ├── HomeHero.astro              ← per-page section, zero props
+│       ├── HomeFeatures.astro
+│       ├── AboutHero.astro
+│       └── …
+├── src/content/<collection>/<item>.json ← one per CMS item (.draft.json = unpublished)
+├── variables.json                       ← typography + layout tokens
+├── colors.json                          ← brand colors
+├── images/ / fonts/                     ← uploaded assets
+└── rendered-websites/<host>/            ← scratch space; not user-visible
     ├── sitemap.json
     ├── pages/<slug>/
-    │   ├── extracted.json         ← sidecar /extract output
-    │   ├── fragment.json          ← /api/html-to-meno-fragment output (for re-slicing)
+    │   ├── extracted.json               ← sidecar /extract output
+    │   ├── fragment.json                ← /api/html-to-meno-fragment output (for re-slicing)
     │   ├── interactions.json
     │   ├── analysis.json
     │   └── content-extraction.json

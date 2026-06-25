@@ -89,23 +89,59 @@ Read those if `$ARGUMENTS` needs detail beyond this cheat-sheet.
      still round-trips — the HTML is recovered — but emit renames it to `__embedN` on save, so
      don't expect a semantic name to survive. (Only a frontmatter backtick const is inlined;
      `html={prop}` / `html={i18n(cms.field)}` stay bindings — a prop-bound embed.)
-   - `<slot />` / `<slot>fallback</slot>`.
+   - `<slot />` / `<slot>fallback</slot>`. **Named slots:** `<slot name="header" />` (with
+     optional fallback). Assign instance content to a named slot with a plain `slot=` attribute
+     on the child: `<Card><h2 slot="header">Title</h2><p>body</p></Card>` (the default slot takes
+     the unnamed children). The `slot=` attribute round-trips as a normal attribute.
    - `<LocaleList … />` (locale switcher; style sub-props wrapped in `style(...)`, editor
      meta in a single `meta={{...}}`).
    - Dynamic tag (`h{{size}}`) → frontmatter `const Tag_0 = \`h${size}\`` + `<Tag_0>…</Tag_0>`.
+   - **Optimized image** → `<img data-meno-optimize="true" src=… alt=… width=… height=… />`
+     (a plain `img` node + the marker attr) emits the runtime `<MenoImage>` (`astro:assets`). A
+     remote `src` needs its host in `project.config.json` `image.domains` to actually optimize.
+   - **Markdown** → `<Markdown source={`# Title\n\nbody`} />` (multi-line hoists to
+     `const __mdN = \`…\``). `source` is **verbatim, never template-resolved** — no `{{…}}` inside.
+   - **Island** (BYO React/Preact/Vue/Svelte) → `<Counter client:visible … />` +
+     `import Counter from '../islands/Counter.tsx'` (file under `src/islands/`). Put the `client:*`
+     directive on the tag (bare `load`/`idle`/`visible`; valued `media`/`only`; omit for
+     server-only). `meno()` auto-wires the renderer — **don't import a renderer or any
+     non-`meno-astro` package in `astro.config`** (the preview statically scans it, allow-lists
+     only `astro/config` + `meno-astro`, and won't open the project otherwise). An island gets
+     **no** `style()` class / instance-style / `cms` forwarding — only its explicit props.
+   - **Custom component** (opaque foreign `.astro`, server-only) → `<Fancy …>children</Fancy>` +
+     `import Fancy from '../custom/Fancy.astro'` (file under `src/custom/`). Author it with full
+     Astro power; Meno passes **only explicit props** + slots children and never models the
+     internals (black box; **no `client:*`**, no `style()` / `cms` forwarding). The server-only
+     sibling of an island — use for dialect-inexpressible markup that needs no browser framework.
 
-9. **Verbatim JS expressions survive; foreign `class`/frontmatter do not (yet).** An
+9. **Verbatim JS expressions + foreign frontmatter survive; raw `class` does not.** An
    un-evaluatable `{expr}` (a function/method call like `{(price * 0.8).toFixed(2)}`,
    `{items.map(fn)}`) is preserved as a `{ _code, expr }` marker and reported as a
    `verbatim` region — it round-trips and builds, it just isn't an editable binding. Prefer
    a real `{{binding}}` when the template engine can evaluate it (identifier/member/
-   operators/ternary). The `rawClass` (raw Tailwind `class="…"`) and frontmatter escape
-   hatches are still **not** implemented — stay inside the grammar for those.
+   operators/ternary). Hand-authored frontmatter (a stray `const`/`import`/`function`) is captured
+   as a verbatim `_frontmatter` passthrough block and round-trips. The one escape hatch still
+   **not** implemented is `rawClass` (a raw Tailwind `class="…"`) — use `style({...})` for classes.
 
 10. **Serialization is deterministic.** All literals (style/props/meta/i18n/list config) are
     printed with stable key order, JSON string escaping, and 80-col wrapping. Don't hand-tune
     formatting — a save re-emits canonically anyway. Drop empties: empty `style`, empty
     `children`, empty `meta`/`interface`, and a lone array child collapse on normalization.
+
+## Escalation ladder (when the dialect can't express it)
+
+Reach for the **lowest** rung that works; escalate only on a genuine wall (never trade away
+visual editing for something the dialect already models):
+
+1. **Native dialect** — nodes + `style()` + `i18n()` + `{{bindings}}` + reusable
+   `src/components/*.astro`. The default.
+2. **Custom component** (rule 8) — a *piece* of UI the dialect can't model → an opaque
+   `src/custom/*.astro` referenced as a `type:"custom"` node (server-only, explicit props, black
+   box, round-trips). Need a *client* framework instead → use an **island** (rule 8).
+3. **Entire custom page** — a whole bespoke route → hand-author `src/pages/<route>.astro`.
+   Dialect body + foreign frontmatter stays visually editable (`_frontmatter` passthrough); a
+   fully non-dialect page opens **read-only** (lists + previews, save is a no-op). Both build as
+   normal Astro.
 
 ## File skeletons
 
@@ -126,6 +162,15 @@ const meta = {
   </div>
 </BaseLayout>
 ```
+
+Optional SEO/head fields ride the same plain `const meta` (never `export`/`satisfies`):
+`viewTransitions: true` (→ `<ClientRouter>`), `noindex: true`, `sitemap: { priority, changefreq,
+exclude }`, `customCode: { head, bodyStart, bodyEnd }`. **`prerender: true | false`** is the
+per-page static/SSR override — it's lifted OUT of `const meta` and emitted as a top-level
+`export const prerender = …` (Astro's own per-route mechanism); `false` needs SSR output. Omit it
+to inherit the project `output`. Project-wide config (`redirects`, remote
+`image.domains`, `prefetch`, `devToolbar`, `icons`, global `customCode`) lives in
+`project.config.json`, not page meta. See the dialect/API docs for the full shapes.
 
 **CMS template page** (`src/pages/<collection>/[slug].astro`) — a page whose
 `meta.source === "cms"` + `meta.cms` schema; the body renders the current item's plain
@@ -171,6 +216,16 @@ const meta = {
   <Fragment set:html={richTextWithComponents(cms.body, cmsComponents)} />
 </BaseLayout>
 ```
+
+**Collection variants** (set on `meta.cms`):
+- **Data-only collection** — OMIT `urlPattern` (and `slugField`) on the schema. It's structured
+  data with no per-item page/route (Team, Testimonials, Settings); no `[slug].astro` is emitted,
+  but it's still registered as a content collection you bind to lists/cards. There is no template
+  page for it — only its `cms/<id>/*.json` items + the schema.
+- **RSS feed** — add `rss: true` to a ROUTED collection's `meta.cms` (one with a `urlPattern`).
+  A prerendered `<route-prefix>/rss.xml` feed is generated (title/description/date auto-detected
+  from the fields; item links use the synthesized `_url`). Data-only collections can't have RSS
+  (no item links).
 
 **Component** (`src/components/<Name>.astro`):
 ```astro

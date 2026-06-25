@@ -123,7 +123,7 @@ STEP 1 — IDENTIFY THE COMPONENT LIST (transitive — leaves matter)
           `structure`, collecting more component refs.
         - Continue until the set stops growing.
 
-      This catches all three levels of the post-/extract-components tree:
+      This catches all three levels of a componentized page tree:
         - Page level:    src/pages/<slug>.astro → Layout, HomeHero, HomeFAQ, ...
         - Section level: HomeHero → Button, Badge; HomeFAQ → FAQItem
         - Block level:   FAQItem (a leaf — no further refs)
@@ -139,7 +139,7 @@ STEP 1 — IDENTIFY THE COMPONENT LIST (transitive — leaves matter)
   1d. If the resulting list is empty → halt with report: "No components to
       process on this page."
 
-  Why transitive: after /extract-components, a page references sections,
+  Why transitive: once a page is componentized, it references sections,
   sections reference blocks (FAQItem, PricingTier), and sections may also
   reference UI primitives (Button, IconButton). Interactivity often
   belongs at the LEAF: an accordion's row-toggle lives in FAQItem, not

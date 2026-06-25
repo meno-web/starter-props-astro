@@ -34,7 +34,7 @@ Task({
 
 ## Notes
 
-- This skill assumes `/split-page` (or its equivalent) has already run — `src/pages/<slug>.astro` should already be a thin shell of component refs.
+- This skill assumes the page has already been componentized — `src/pages/<slug>.astro` should already be a thin shell of component refs.
 - Port detection (handled by the coordinator) — target is the Studio **editor** server (3000-range), NOT the SSR preview (8080-range; same PID, same cwd, but no write routes):
   1. Explicit `--port=N` wins.
   2. Else `$PORT` env var, if set. (`$MENO_SERVE_PORT` is the SSR preview — do NOT use it.)
