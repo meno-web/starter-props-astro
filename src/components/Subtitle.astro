@@ -1,20 +1,9 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps } from 'meno-astro';
 
 const __props = resolveProps(Astro, {
   text: { type: "string", default: "Blog" }
 });
 const { text, class: className } = __props;
 ---
-<span class={style({
-    base: {
-      fontSize: "var(--s-fs)",
-      letterSpacing: "var(--s-ls)",
-      fontWeight: "var(--s-fw)",
-      color: "var(--text)",
-      textTransform: "var(--subtitle)",
-      marginBottom: "var(--s-m)"
-    },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })}>{text}</span>
+<span class={cx("mb-(--s-m) text-text text-(length:--s-fs) font-(number:--s-fw) [text-transform:var(--subtitle)] tracking-(--s-ls)", className)}>{text}</span>

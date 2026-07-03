@@ -1,5 +1,5 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps, style } from 'meno-astro';
 import Heading from './Heading.astro';
 import Text from './Text.astro';
 
@@ -13,40 +13,10 @@ const __props = resolveProps(Astro, {
 });
 const { question, answer, isOpen, class: className } = __props;
 ---
-<div class={style({
-    base: { width: "100%", borderBottom: "1px solid var(--border, #e0e0e0)" },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })} data-faq-item="true">
-  <button class={style({
-      base: {
-        width: "100%",
-        padding: "20px 0",
-        background: "transparent",
-        border: "none",
-        cursor: "pointer",
-        display: "flex",
-        justifyContent: "space-between",
-        alignItems: "center",
-        gap: "16px"
-      },
-      tablet: {},
-      mobile: {}
-    }, __props)} data-faq-toggle="true" type="button">
+<div class={cx("w-full border-b-[1px_solid_var(--border,_#e0e0e0)]", className)} data-faq-item="true">
+  <button data-faq-toggle="true" type="button" class="p-[20px_0] flex justify-between items-center gap-4 w-full [background:transparent] border-[none] cursor-pointer">
     <Heading text={question} tag="3" />
-    <span class={style({
-        base: {
-          fontSize: "20px",
-          transition: "transform 0.3s ease",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "var(--text)",
-          flexShrink: 0
-        },
-        tablet: {},
-        mobile: {}
-      }, __props, {
+    <span class={style({}, __props, {
         interactive: [
           {
             name: "when open",
@@ -56,18 +26,9 @@ const { question, answer, isOpen, class: className } = __props;
             previewProp: "isOpen"
           }
         ]
-      })} data-faq-icon="true">+</span>
+      }) + " flex justify-center items-center text-text text-[20px] shrink-0 transition-[transform_0.3s_ease]"} data-faq-icon="true">+</span>
   </button>
-  <div class={style({
-      base: {
-        maxHeight: "0",
-        overflow: "hidden",
-        transition: "max-height 0.3s ease, padding 0.3s ease",
-        paddingBottom: "0"
-      },
-      tablet: {},
-      mobile: {}
-    }, __props, {
+  <div class={style({}, __props, {
       interactive: [
         {
           name: "when open",
@@ -77,7 +38,7 @@ const { question, answer, isOpen, class: className } = __props;
           previewProp: "isOpen"
         }
       ]
-    })} data-faq-answer="true"><Text text={answer} size="medium" class={style({ base: { maxWidth: "530px", margin: "0 0 20px 0" } }, __props, { instance: true })} __menoStyle={{ base: { maxWidth: "530px", margin: "0 0 20px 0" } }} /></div>
+    }) + " pb-[0] max-h-[0] overflow-hidden transition-[max-height_0.3s_ease,_padding_0.3s_ease]"} data-faq-answer="true"><Text text={answer} size="medium" class="m-[0_0_20px_0] max-w-[530px]" /></div>
 </div>
 
 
