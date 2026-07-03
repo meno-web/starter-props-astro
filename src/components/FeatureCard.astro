@@ -9,7 +9,7 @@ const __props = resolveProps(Astro, {
 });
 const { text, description, class: className } = __props;
 ---
-<div class={cx("p-6 bg-bg rounded-[8px]", className)}>
+<div class={cx("p-6 bg-[var(--gray-100)] rounded-[8px]", className)}>
   <Heading text={text} tag="3" class="mb-(--he-m)" />
   <Text text={description} />
 </div>
