@@ -1,7 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
-import { i18n } from 'meno-astro';
-import { BaseLayout, MenoImage } from 'meno-astro/components';
+import { i18n, style } from 'meno-astro';
+import { BaseLayout } from 'meno-astro/components';
 import Badge from '../../components/Badge.astro';
 import Heading from '../../components/Heading.astro';
 import Layout from '../../components/Layout.astro';
@@ -10,7 +10,6 @@ import Section from '../../components/Section.astro';
 import Text from '../../components/Text.astro';
 import '../../styles/theme.css';
 
-export const prerender = true;
 export async function getStaticPaths() {
   const entries = await getCollection("blog");
   return entries.map((entry) => ({
@@ -22,8 +21,8 @@ export async function getStaticPaths() {
 const { cms } = Astro.props;
 
 const meta = {
-  title: i18n(cms.title),
-  description: i18n(cms.description),
+  title: "{{cms.title}}",
+  description: "{{cms.description}}",
   source: "cms",
   cms: {
     id: "blog",
@@ -45,12 +44,31 @@ const meta = {
 <BaseLayout meta={meta}>
   <Layout cms={cms}>
     <Section cms={cms}>
-      <div class="m-auto max-w-(--co-s)">
-        <Badge text={i18n(cms.category)} class="mb-4 text-[14px]" cms={cms} />
-        <Heading text={i18n(cms.title)} class="mb-(--h-m)" cms={cms} />
+      <div class={style({ base: { maxWidth: "var(--co-s)", margin: "auto" }, tablet: {}, mobile: {} })}>
+        <Badge text={i18n(cms.category)} cms={cms} class={style({ base: { fontSize: "14px", marginBottom: "16px" } }, undefined, { instance: true })} __menoStyle={{ base: { fontSize: "14px", marginBottom: "16px" } }} />
+        <Heading text={i18n(cms.title)} cms={cms} class={style({ base: { marginBottom: "var(--h-m)" } }, undefined, { instance: true })} __menoStyle={{ base: { marginBottom: "var(--h-m)" } }} />
         <Text text={i18n(cms.date)} color="light" cms={cms} />
-        <MenoImage src={i18n(cms.image) || undefined} alt={i18n(cms.title) || undefined} class="mt-8 mb-8 w-full aspect-video rounded-[8px] object-cover" />
-        <RichText content={i18n(cms.content)} class="m-auto mt-6 max-w-[621px]" cms={cms} />
+        <img class={style({
+            base: {
+              width: "100%",
+              aspectRatio: "16 / 9",
+              objectFit: "cover",
+              borderRadius: "8px",
+              marginTop: "32px",
+              marginBottom: "32px"
+            },
+            tablet: {},
+            mobile: {}
+          })} src={i18n(cms.image) || undefined} alt={i18n(cms.title) || undefined} />
+        <RichText content={i18n(cms.content)} cms={cms} class={style({
+            base: { marginTop: "24px", maxWidth: "621px", margin: "auto" },
+            tablet: {},
+            mobile: {}
+          }, undefined, { instance: true })} __menoStyle={{
+            base: { marginTop: "24px", maxWidth: "621px", margin: "auto" },
+            tablet: {},
+            mobile: {}
+          }} />
       </div>
     </Section>
   </Layout>
