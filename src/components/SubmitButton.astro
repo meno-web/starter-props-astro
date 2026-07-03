@@ -1,27 +1,9 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps } from 'meno-astro';
 
 const __props = resolveProps(Astro, {
   text: { type: "string", default: "Send Message" }
 });
 const { text, class: className } = __props;
 ---
-<button class={style({
-    base: {
-      padding: "var(--b-p)",
-      display: "inline-flex",
-      flexDirection: "row",
-      justifyContent: "center",
-      alignItems: "center",
-      backgroundColor: "var(--accent)",
-      borderRadius: "var(--b-br)",
-      color: "var(--white)",
-      fontSize: "var(--te-fs)",
-      fontWeight: "500",
-      border: "none",
-      cursor: "pointer",
-      marginTop: "var(--b-m)"
-    },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })} type="submit">{text}</button>
+<button class={cx("p-(--b-p) mt-(--b-m) inline-flex flex-row justify-center items-center bg-accent text-[var(--white)] border-[none] rounded-(--b-br) text-(length:--te-fs) font-[500] cursor-pointer", className)} type="submit">{text}</button>

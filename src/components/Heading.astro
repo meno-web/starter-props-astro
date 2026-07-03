@@ -1,10 +1,11 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps, richTextWithComponents, variants } from 'meno-astro';
+import { cmsComponents } from '../cmsComponents';
 
 const __props = resolveProps(Astro, {
   text: {
     type: "rich-text",
-    default: "<!--MENO_RAW_HTML-->Everything you <span class=\"custom-span\" data-meno-span=\"true\">need</span> to build professional website"
+    default: "Everything you <span class=\"custom-span\" data-meno-span=\"true\">need</span> to build professional website"
   },
   tag: { type: "select", default: "1", options: ["1", "2", "3", "4", "5", "6"] }
 });
@@ -14,26 +15,14 @@ const __meno = { acceptsStyles: true };
 
 const Tag_0 = `h${tag}`;
 ---
-<Tag_0 class={style({
-    base: {
-      fontSize: {
-        _mapping: true,
-        prop: "tag",
-        values: {
-          "1": "var(--h-fs)",
-          "2": "var(--he-fs)",
-          "3": "var(--hea-fs)",
-          "4": "var(--head-fs)",
-          "5": "22px",
-          "6": "20px",
-          default: "var(--h-fs)"
-        }
-      },
-      letterSpacing: "var(--h-ls)",
-      fontWeight: "var(--h-fw)",
-      lineHeight: "var(--h-lh)",
-      color: "var(--text)"
-    },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })}><Fragment set:html={text} /></Tag_0>
+<Tag_0 class={cx(variants(__props, {
+    tag: {
+      "1": "text-(length:--h-fs)",
+      "2": "text-(length:--he-fs)",
+      "3": "text-(length:--hea-fs)",
+      "4": "text-(length:--head-fs)",
+      "5": "text-[22px]",
+      "6": "text-[20px]",
+      default: "text-(length:--h-fs)"
+    }
+  }), "text-text font-(number:--h-fw) leading-(--h-lh) tracking-(--h-ls)", className)}><Fragment set:html={richTextWithComponents(text, cmsComponents)} /></Tag_0>
