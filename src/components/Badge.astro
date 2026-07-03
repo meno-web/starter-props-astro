@@ -1,5 +1,5 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps } from 'meno-astro';
 
 const __props = resolveProps(Astro, {
   text: { type: "string", default: "Badge" }
@@ -8,16 +8,4 @@ const { text, class: className } = __props;
 
 const __meno = { acceptsStyles: true };
 ---
-<span class={style({
-    base: {
-      display: "inline-block",
-      padding: "4px 12px",
-      backgroundColor: "var(--gray-100)",
-      borderRadius: "999px",
-      fontSize: "var(--tex-fs)",
-      fontWeight: "500",
-      color: "var(--text)"
-    },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })}>{text}</span>
+<span class={cx("p-[4px_12px] inline-block bg-[var(--gray-100)] text-text rounded-[999px] text-(length:--tex-fs) font-[500]", className)}>{text}</span>

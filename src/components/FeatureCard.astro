@@ -1,5 +1,5 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps } from 'meno-astro';
 import Heading from './Heading.astro';
 import Text from './Text.astro';
 
@@ -9,11 +9,7 @@ const __props = resolveProps(Astro, {
 });
 const { text, description, class: className } = __props;
 ---
-<div class={style({
-    base: { padding: "24px", backgroundColor: "var(--bg)", borderRadius: "8px" },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })}>
-  <Heading text={text} tag="3" class={style({ base: { marginBottom: "var(--he-m)" }, tablet: {}, mobile: {} }, __props, { instance: true })} __menoStyle={{ base: { marginBottom: "var(--he-m)" }, tablet: {}, mobile: {} }} />
+<div class={cx("p-6 bg-bg rounded-[8px]", className)}>
+  <Heading text={text} tag="3" class="mb-(--he-m)" />
   <Text text={description} />
 </div>

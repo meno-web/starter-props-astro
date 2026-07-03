@@ -1,5 +1,6 @@
 ---
-import { resolveProps, style } from 'meno-astro';
+import { cx, resolveProps, richTextWithComponents } from 'meno-astro';
+import { cmsComponents } from '../cmsComponents';
 
 const __props = resolveProps(Astro, {
   content: { type: "rich-text", default: "Rich text", editor: "extended" }
@@ -8,16 +9,7 @@ const { content, class: className } = __props;
 
 const __meno = { acceptsStyles: true };
 ---
-<div class={style({
-    base: {
-      lineHeight: "1.7",
-      fontSize: "18px",
-      color: "var(--text)",
-      letterSpacing: "-0.01em"
-    },
-    tablet: {},
-    mobile: {}
-  }, __props, { root: true })} cmsrt={true}><Fragment set:html={content} /></div>
+<div class={cx("text-text text-[18px] leading-[1.7] tracking-[-0.01em]", className)} cmsrt={true}><Fragment set:html={richTextWithComponents(content, cmsComponents)} /></div>
 
 
 <style is:global>
